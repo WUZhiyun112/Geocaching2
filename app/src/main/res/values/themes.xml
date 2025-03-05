@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.Geocaching1" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Primary branding colors -->
+        <item name="colorPrimary">#396034</item>
+
+        <!-- Other attributes -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+
+    </style>
+    <style name="RoundedTextInputLayout" parent="ShapeAppearance.MaterialComponents.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">8dp</item> <!-- 设置圆角大小 -->
+    </style>
+</resources>
