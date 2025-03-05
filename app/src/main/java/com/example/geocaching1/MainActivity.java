@@ -1,21 +1,12 @@
 package com.example.geocaching1;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.View;
-import android.view.animation.LinearInterpolator;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -24,7 +15,6 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.compose.ui.node.WeakReference;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -34,11 +24,34 @@ import com.amap.api.location.AMapLocationClient;
 import com.amap.api.location.AMapLocationClientOption;
 import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
+import com.amap.api.maps.LocationSource;
+import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptorFactory;
+import com.amap.api.maps.model.Marker;
+import com.amap.api.maps.model.MyLocationStyle;
+import com.amap.api.services.core.AMapException;
+import com.amap.api.services.core.PoiItem;
+import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.poisearch.PoiResult;
+import com.amap.api.services.poisearch.PoiSearch;
+
+
+
+import android.content.Context;
+import android.content.Intent;
+
+import android.text.SpannableString;
+
+import android.view.View;
+
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.TextView;
+
 import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.UiSettings;
-import com.amap.api.maps.model.BitmapDescriptor;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
@@ -61,11 +74,11 @@ import com.amap.api.services.poisearch.PoiResult;
 import com.amap.api.services.poisearch.PoiSearch;
 import com.example.geocaching1.databinding.ActivityMainBinding;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.List;
+
+
+
 public class MainActivity extends AppCompatActivity implements AMapLocationListener, LocationSource,
         PoiSearch.OnPoiSearchListener, AMap.OnMapClickListener, AMap.OnMapLongClickListener,
         GeocodeSearch.OnGeocodeSearchListener, AMap.OnMarkerClickListener, AMap.OnMarkerDragListener, AMap.InfoWindowAdapter, AMap.OnInfoWindowClickListener {
@@ -81,25 +94,19 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     private AMap aMap = null;
     // 声明地图定位监听
     private LocationSource.OnLocationChangedListener mListener = null;
-    // POI查询对象
+    //POI查询对象
     private PoiSearch.Query query;
-    // POI搜索对象
+    //POI搜索对象
     private PoiSearch poiSearch;
-    // 城市码
+    //城市码
     private String cityCode = null;
-    // 地理编码搜索
+    //地理编码搜索
     private GeocodeSearch geocodeSearch;
-    // 解析成功标识码
+    //解析成功标识码
     private static final int PARSE_SUCCESS_CODE = 1000;
-
-    // Geocache 数据列表
-    private List<Geocache> geocacheList = new ArrayList<>();
-
-    // 加载自定义图标（确保 geo_star.png 放在 res/drawable 文件夹下）
-    BitmapDescriptor customIcon;
-    // 城市
+    //城市
     private String city;
-    // 标点列表
+    //标点列表
     private final List<Marker> markerList = new ArrayList<>();
 
     @Override
@@ -127,9 +134,6 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         initSearch();
         // 初始化控件
         initView();
-
-        // 加载自定义图标
-        customIcon = BitmapDescriptorFactory.fromResource(R.drawable.geo_star);
     }
 
     /**
@@ -152,18 +156,18 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     private void initView() {
         // Poi搜索按钮点击事件
         binding.fabPoi.setOnClickListener(v -> {
-            // 构造query对象
+            //构造query对象
             query = new PoiSearch.Query("购物", "", cityCode);
             // 设置每页最多返回多少条poiItem
             query.setPageSize(10);
-            // 设置查询页码
+            //设置查询页码
             query.setPageNum(1);
-            // 构造 PoiSearch 对象
+            //构造 PoiSearch 对象
             try {
                 poiSearch = new PoiSearch(this, query);
-                // 设置搜索回调监听
+                //设置搜索回调监听
                 poiSearch.setOnPoiSearchListener(this);
-                // 发起搜索附近POI异步请求
+                //发起搜索附近POI异步请求
                 poiSearch.searchPOIAsyn();
             } catch (AMapException e) {
                 throw new RuntimeException(e);
@@ -176,13 +180,13 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         // 键盘按键监听
         binding.etAddress.setOnKeyListener((v, keyCode, event) -> {
             if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-                // 获取输入框的值
+                //获取输入框的值
                 String address = binding.etAddress.getText().toString().trim();
                 if (address.isEmpty()) {
                     showMsg("请输入地址");
                 } else {
                     InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                    // 隐藏软键盘
+                    //隐藏软键盘
                     imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
 
                     // name表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode
@@ -217,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             aMap.setLocationSource(this);
             // 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
             aMap.setMyLocationEnabled(true);
-            // 设置最小缩放等级为12 ，缩放级别范围为[3, 20]
+            //设置最小缩放等级为12 ，缩放级别范围为[3, 20]
             aMap.setMinZoomLevel(12);
             // 开启室内地图
             aMap.showIndoorMap(true);
@@ -247,21 +251,21 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
      */
     private void initLocation() {
         try {
-            // 初始化定位
+            //初始化定位
             mLocationClient = new AMapLocationClient(getApplicationContext());
-            // 设置定位回调监听
+            //设置定位回调监听
             mLocationClient.setLocationListener(this);
-            // 初始化AMapLocationClientOption对象
+            //初始化AMapLocationClientOption对象
             mLocationOption = new AMapLocationClientOption();
-            // 设置定位模式为AMapLocationMode.Hight_Accuracy，高精度模式。
+            //设置定位模式为AMapLocationMode.Hight_Accuracy，高精度模式。
             mLocationOption.setLocationMode(AMapLocationClientOption.AMapLocationMode.Hight_Accuracy);
-            // 获取最近3s内精度最高的一次定位结果
+            //获取最近3s内精度最高的一次定位结果
             mLocationOption.setOnceLocationLatest(true);
-            // 设置是否返回地址信息（默认返回地址信息）
+            //设置是否返回地址信息（默认返回地址信息）
             mLocationOption.setNeedAddress(true);
-            // 设置定位超时时间，单位是毫秒
+            //设置定位超时时间，单位是毫秒
             mLocationOption.setHttpTimeOut(6000);
-            // 给定位客户端对象设置定位参数
+            //给定位客户端对象设置定位参数
             mLocationClient.setLocationOption(mLocationOption);
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -335,6 +339,24 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         if (aMapLocation.getErrorCode() == 0) {
             // 定位成功
             showMsg("定位成功");
+//            aMapLocation.getLocationType();//获取当前定位结果来源，如网络定位结果，详见定位类型表
+//            aMapLocation.getLatitude();//获取纬度
+//            aMapLocation.getLongitude();//获取经度
+//            aMapLocation.getAccuracy();//获取精度信息
+//            aMapLocation.getAddress();//详细地址，如果option中设置isNeedAddress为false，则没有此结果，网络定位结果中会有地址信息，GPS定位不返回地址信息。
+//            aMapLocation.getCountry();//国家信息
+//            aMapLocation.getProvince();//省信息
+//            aMapLocation.getCity();//城市信息
+            String result = aMapLocation.getDistrict();//城区信息
+//            aMapLocation.getStreet();//街道信息
+//            aMapLocation.getStreetNum();//街道门牌号信息
+//            aMapLocation.getCityCode();//城市编码
+//            aMapLocation.getAdCode();//地区编码
+//            aMapLocation.getAoiName();//获取当前定位点的AOI信息
+//            aMapLocation.getBuildingId();//获取当前室内定位的建筑物Id
+//            aMapLocation.getFloor();//获取当前室内定位的楼层
+//            aMapLocation.getGpsAccuracyStatus();//获取GPS的当前状态
+
             // 停止定位
             stopLocation();
             // 显示地图定位结果
@@ -347,9 +369,6 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             cityCode = aMapLocation.getCityCode();
             // 城市
             city = aMapLocation.getCity();
-
-            // 获取 Geocache 数据
-            fetchGeocacheData(aMapLocation.getLatitude(), aMapLocation.getLongitude());
         } else {
             // 定位失败
             showMsg("定位失败，错误：" + aMapLocation.getErrorInfo());
@@ -358,81 +377,6 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
                     + aMapLocation.getErrorInfo());
         }
     }
-
-    /**
-     * 获取 Geocache 数据
-     */
-    private void fetchGeocacheData(double latitude, double longitude) {
-        new FetchGeocachesTask(this, latitude, longitude).execute();
-    }
-    /**
-     * 异步任务：获取 Geocache 数据
-     */
-    private static class FetchGeocachesTask extends AsyncTask<Void, Void, String> {
-        private WeakReference<MainActivity> activityReference;
-        private double latitude;
-        private double longitude;
-
-        FetchGeocachesTask(MainActivity activity, double latitude, double longitude) {
-            activityReference = new WeakReference<>(activity);
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-
-        @Override
-        protected String doInBackground(Void... voids) {
-            // 执行网络请求，使用传入的经纬度
-            return GeocacheFetcher.fetchGeocaches(latitude, longitude);
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            MainActivity activity = activityReference.get();
-            if (activity == null || activity.isFinishing()) {
-                return; // Activity 已经被销毁，直接返回
-            }
-
-            // 更新 UI
-            if (result != null && !result.isEmpty()) {
-                if (result.startsWith("Error") || result.startsWith("Exception")) {
-                    Toast.makeText(activity, "Error fetching geocaches: " + result, Toast.LENGTH_SHORT).show();
-                } else {
-                    activity.parseAndShowGeocaches(result);
-                }
-            } else {
-                Toast.makeText(activity, "Failed to load geocaches", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    /**
-     * 解析并显示 Geocache 数据
-     */
-    private void parseAndShowGeocaches(String json) {
-        List<Geocache> geocacheList = GeocacheFetcher.parseGeocaches(json);
-        if (geocacheList != null && !geocacheList.isEmpty()) {
-            for (Geocache geocache : geocacheList) {
-                // 在地图上添加标记
-                LatLng latLng = new LatLng(geocache.getLatitude().doubleValue(), geocache.getLongitude().doubleValue());
-                aMap.addMarker(new MarkerOptions()
-                        .position(latLng)
-                        .title(geocache.getName())
-                        .snippet("Geocache: " + geocache.getCode())
-                        .icon(customIcon)); // 使用自定义图标
-            }
-        } else {
-            Toast.makeText(this, "No geocaches found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    /**
-     * 清除所有标记
-     */
-
-
-
-
-
 
     /**
      * 激活定位
