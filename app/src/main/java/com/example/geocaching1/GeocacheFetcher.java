@@ -10,8 +10,10 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,43 +80,6 @@ public class GeocacheFetcher {
         }
     }
 
-    // 新增解析 API 数据并返回 Geocache 对象列表的方法
-    public static List<Geocache> parseGeocaches(String jsonResponse) {
-        List<Geocache> geocacheList = new ArrayList<>();
-        try {
-            // 将 JSON 字符串解析为 JSON 对象
-            JSONObject jsonObject = new JSONObject(jsonResponse);
-
-            // 获取缓存列表数组
-            JSONArray cachesArray = jsonObject.getJSONArray("caches");
-
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); // Change format if needed
-
-            // 解析每个缓存数据
-            for (int i = 0; i < cachesArray.length(); i++) {
-                JSONObject cacheObject = cachesArray.getJSONObject(i);
-                String code = cacheObject.getString("code");
-                String name = cacheObject.getString("name");
-
-                // 解析经纬度值，将字符串转换为 BigDecimal
-                BigDecimal longitude = new BigDecimal(cacheObject.getString("longitude"));
-                BigDecimal latitude = new BigDecimal(cacheObject.getString("latitude"));
-
-                String type = cacheObject.getString("type");
-                String status = cacheObject.getString("status");
-
-                String foundAtString = cacheObject.getString("foundAt");
-                LocalDateTime foundAt = LocalDateTime.parse(foundAtString, formatter); // Parse string into LocalDateTime
-
-                // 创建 Geocache 对象
-                Geocache geocache = new Geocache(code, name, longitude, latitude, status, type, foundAt);
-                geocacheList.add(geocache);
-            }
-        } catch (Exception e) {
-            Log.e("GeocacheFetcher", "Error parsing JSON response: " + e.getMessage());
-        }
-        return geocacheList;
-    }
 
     // 继续保留原来获取 Geocache 详情的方法
     public static Geocache fetchGeocacheDetails(String cacheCode) {
@@ -173,12 +138,59 @@ public class GeocacheFetcher {
                 BigDecimal latitude = new BigDecimal(location[0]);
                 BigDecimal longitude = new BigDecimal(location[1]);
 
-                return new Geocache(code, name, latitude, longitude, status, type, LocalDateTime.now());
+                return new Geocache(code, name, latitude, longitude, status, type, new Date());
             }
         } catch (Exception e) {
             Log.e("GeocacheFetcher", "JSON Parsing Error: ", e);
         }
         return null;
     }
+
+    public static List<Geocache> parseGeocaches(String jsonResponse) {
+        List<Geocache> geocacheList = new ArrayList<>();
+        try {
+            // 将 JSON 字符串解析为 JSON 对象
+            JSONObject jsonObject = new JSONObject(jsonResponse);
+
+            // 获取缓存列表数组
+            JSONArray cachesArray = jsonObject.getJSONArray("results");
+
+            // 创建日期解析格式
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+            // 解析每个缓存数据
+            for (int i = 0; i < cachesArray.length(); i++) {
+                JSONObject cacheObject = cachesArray.getJSONObject(i);
+                String code = cacheObject.getString("code");
+                String name = cacheObject.getString("name");
+
+                // 解析经纬度值，将字符串转换为 BigDecimal
+                BigDecimal longitude = new BigDecimal(cacheObject.getString("longitude"));
+                BigDecimal latitude = new BigDecimal(cacheObject.getString("latitude"));
+
+                String type = cacheObject.getString("type");
+                String status = cacheObject.getString("status");
+
+                // 解析 foundAt 时间
+                String foundAtString = cacheObject.getString("foundAt");
+                Date foundAt = null;
+                try {
+                    foundAt = formatter.parse(foundAtString); // 解析字符串为 Date
+                } catch (Exception e) {
+                    Log.e("GeocacheFetcher", "Date parsing error: " + e.getMessage());
+                }
+
+                // 创建 Geocache 对象
+                Geocache geocache = new Geocache(code, name, longitude, latitude, status, type, foundAt);
+                geocacheList.add(geocache);
+            }
+        } catch (Exception e) {
+            Log.e("GeocacheFetcher", "Error parsing JSON response: " + e.getMessage());
+        }
+        return geocacheList;
+    }
+
+
+
 
 }

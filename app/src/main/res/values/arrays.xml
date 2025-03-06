@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 地理缓存类型 -->
+    <array name="type_array">
+        <item>Types</item>
+        <item>Virtual</item>
+        <item>Multi</item>
+        <item>Traditional</item>
+    </array>
+
+    <!-- 地理缓存状态 -->
+    <array name="status_array">
+        <item>Statuses</item>
+        <item>Available</item>
+        <item>Unavailable</item>
+    </array>
+
+    <array name="distance_array">
+        <item>5km</item>
+        <item>10km</item>
+        <item>20km</item>
+    </array>
+</resources>

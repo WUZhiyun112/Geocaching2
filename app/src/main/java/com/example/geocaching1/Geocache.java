@@ -2,10 +2,13 @@ package com.example.geocaching1;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 public class Geocache implements Parcelable {
     private String code;
@@ -14,9 +17,12 @@ public class Geocache implements Parcelable {
     private BigDecimal longitude;
     private String status;
     private String type;
-    private LocalDateTime foundAt;
+    private Date foundAt;
 
-    public Geocache(String code, String name, BigDecimal latitude, BigDecimal longitude, String status, String type, LocalDateTime foundAt) {
+    // 日期格式
+    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+
+    public Geocache(String code, String name, BigDecimal latitude, BigDecimal longitude, String status, String type, Date foundAt) {
         this.code = code;
         this.name = name;
         this.latitude = latitude;
@@ -34,7 +40,15 @@ public class Geocache implements Parcelable {
         longitude = new BigDecimal(in.readString());
         status = in.readString();
         type = in.readString();
-        foundAt = LocalDateTime.parse(in.readString(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+
+        // 解析时间
+        String foundAtString = in.readString();
+        try {
+            foundAt = foundAtString != null ? DATE_FORMATTER.parse(foundAtString) : null;
+        } catch (ParseException e) {
+            Log.e("Geocache", "Date parsing error: " + e.getMessage());
+            foundAt = null;
+        }
     }
 
     public static final Creator<Geocache> CREATOR = new Creator<Geocache>() {
@@ -62,7 +76,9 @@ public class Geocache implements Parcelable {
         dest.writeString(longitude.toString());
         dest.writeString(status);
         dest.writeString(type);
-        dest.writeString(foundAt.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+        // 写入时间
+        dest.writeString(foundAt != null ? DATE_FORMATTER.format(foundAt) : null);
     }
 
     // Getters
@@ -90,7 +106,7 @@ public class Geocache implements Parcelable {
         return type;
     }
 
-    public LocalDateTime getFoundAt() {
+    public Date getFoundAt() {
         return foundAt;
     }
 

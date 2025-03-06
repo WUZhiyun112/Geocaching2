@@ -1,8 +1,11 @@
 package com.example.geocaching1;
 
+import static com.example.geocaching1.GeocacheFetcher.fetchGeocacheDetails;
+
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
@@ -15,9 +18,13 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import java.lang.ref.WeakReference;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -26,6 +33,7 @@ import com.amap.api.location.AMapLocationListener;
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.LocationSource;
 import com.amap.api.maps.UiSettings;
+import com.amap.api.maps.model.BitmapDescriptor;
 import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MyLocationStyle;
@@ -57,10 +65,6 @@ import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
-import com.amap.api.maps.model.MyLocationStyle;
-import com.amap.api.maps.model.animation.Animation;
-import com.amap.api.maps.model.animation.RotateAnimation;
-import com.amap.api.services.core.AMapException;
 import com.amap.api.services.core.LatLonPoint;
 import com.amap.api.services.core.PoiItem;
 import com.amap.api.services.geocoder.GeocodeAddress;
@@ -73,6 +77,11 @@ import com.amap.api.services.geocoder.RegeocodeResult;
 import com.amap.api.services.poisearch.PoiResult;
 import com.amap.api.services.poisearch.PoiSearch;
 import com.example.geocaching1.databinding.ActivityMainBinding;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,6 +99,8 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     public AMapLocationClient mLocationClient = null;
     // 声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
+
+    private GeocacheAdapter geocacheAdapter;
     // 声明地图控制器
     private AMap aMap = null;
     // 声明地图定位监听
@@ -106,6 +117,11 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     private static final int PARSE_SUCCESS_CODE = 1000;
     //城市
     private String city;
+    // Geocache 数据列表
+    private List<Geocache> geocacheList = new ArrayList<>();
+
+    // 加载自定义图标（确保 geo_star.png 放在 res/drawable 文件夹下）
+    BitmapDescriptor customIcon;
     //标点列表
     private final List<Marker> markerList = new ArrayList<>();
 
@@ -124,6 +140,27 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+
+        FloatingActionButton fabList = findViewById(R.id.fab_list);
+        fabList.setOnClickListener(v -> {
+            // 确保 geocacheList 已填充数据
+            if (geocacheList.isEmpty()) {
+                Toast.makeText(this, "No geocache data available", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // 跳转到 DashboardActivity
+            Intent intent = new Intent(MainActivity.this, DashboardActivity.class);
+            intent.putParcelableArrayListExtra("geocacheList", new ArrayList<>(geocacheList)); // 传递 geocacheList
+            startActivity(intent);
+        });
+        FloatingActionButton fabProfile = findViewById(R.id.fab_profile);
+
+        fabProfile.setOnClickListener(v -> {
+            // 跳转到个人资料页面
+            Intent intent = new Intent(MainActivity.this, SelfActivity.class);
+            startActivity(intent);
+        });
         // 初始化定位
         initLocation();
         // 绑定生命周期 onCreate
@@ -134,6 +171,19 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         initSearch();
         // 初始化控件
         initView();
+
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
+
+// Set a LinearLayoutManager (vertical list)
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+// Set the adapter
+        geocacheAdapter = new GeocacheAdapter(MainActivity.this, geocacheList);
+        recyclerView.setAdapter(geocacheAdapter);
+
+
+
+        customIcon = BitmapDescriptorFactory.fromResource(R.drawable.geo_star);
     }
 
     /**
@@ -197,6 +247,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             }
             return false;
         });
+
     }
 
     /**
@@ -222,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             // 设置为true表示启动显示定位蓝点，false表示隐藏定位蓝点并不进行定位，默认是false。
             aMap.setMyLocationEnabled(true);
             //设置最小缩放等级为12 ，缩放级别范围为[3, 20]
-            aMap.setMinZoomLevel(12);
+            aMap.setMinZoomLevel(5);
             // 开启室内地图
             aMap.showIndoorMap(true);
             // 设置地图点击事件
@@ -369,6 +420,8 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             cityCode = aMapLocation.getCityCode();
             // 城市
             city = aMapLocation.getCity();
+
+            fetchGeocacheData(aMapLocation.getLatitude(), aMapLocation.getLongitude());
         } else {
             // 定位失败
             showMsg("定位失败，错误：" + aMapLocation.getErrorInfo());
@@ -378,6 +431,164 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         }
     }
 
+
+    private void fetchGeocacheData(double latitude, double longitude) {
+        new FetchGeocachesTask(this, latitude, longitude, new GeocacheDataCallback() {
+            @Override
+            public void onDataLoaded(List<Geocache> geocacheList) {
+                // 数据加载完成后的逻辑
+                Log.d("MainActivity", "Geocache data loaded: " + geocacheList.size());
+            }
+        }).execute();
+    }
+    /**
+     * 异步任务：获取 Geocache 数据
+     */
+    private static class FetchGeocachesTask extends AsyncTask<Void, Void, String> {
+        private WeakReference<MainActivity> activityReference;
+        private double latitude;
+        private double longitude;
+        private GeocacheDataCallback callback; // 添加回调接口
+
+        FetchGeocachesTask(MainActivity activity, double latitude, double longitude, GeocacheDataCallback callback) {
+            activityReference = new WeakReference<>(activity);
+            this.latitude = latitude;
+            this.longitude = longitude;
+            this.callback = callback; // 初始化回调
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            // 执行网络请求，使用传入的经纬度
+            return GeocacheFetcher.fetchGeocaches(latitude, longitude);
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            MainActivity activity = activityReference.get();
+            if (activity == null || activity.isFinishing()) {
+                Log.e("FetchGeocachesTask", "Activity is null or finishing, cannot update UI");
+                return;
+            }
+
+            Log.d("FetchGeocachesTask", "Received result: " + result);
+
+            if (result != null && !result.isEmpty()) {
+                if (result.startsWith("Error") || result.startsWith("Exception")) {
+                    Toast.makeText(activity, "Error fetching geocaches: " + result, Toast.LENGTH_SHORT).show();
+                } else {
+                    try {
+                        activity.parseAndShowGeocaches(result); // 只更新数据，不跳转
+                    } catch (Exception e) {
+                        Log.e("FetchGeocachesTask", "Error parsing geocaches", e);
+                    }
+                }
+            } else {
+                Toast.makeText(activity, "Failed to load geocaches", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /**
+     * 解析并显示 Geocache 数据
+     */
+    private void parseAndShowGeocaches(String json) {
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray results = jsonObject.getJSONArray("results");
+
+            for (int i = 0; i < results.length(); i++) {
+                String geocacheId = results.getString(i); // Ensure this is a String
+
+                // 获取地理缓存详情并添加到列表中
+                new FetchGeocacheDetailsTask(geocacheAdapter).execute(geocacheId);
+            }
+
+            // 手动添加一个标记（可选）
+            LatLng haidianLatLng = new LatLng(39.95933, 116.29845); // 北京海淀区
+            aMap.addMarker(new MarkerOptions()
+                    .position(haidianLatLng)
+                    .title("Haidian District")
+                    .snippet("Manually added point")
+                    .icon(customIcon)); // 使用自定义图标
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("ParseGeocaches", "Error parsing geocache data: " + e.getMessage());
+            Toast.makeText(this, "Error parsing geocache data", Toast.LENGTH_SHORT).show();
+        }
+    }
+//    private class FetchGeocacheDetailsTask extends AsyncTask<String, Void, Geocache> {
+//        private GeocacheAdapter geocacheAdapter;
+//
+//        FetchGeocacheDetailsTask(GeocacheAdapter geocacheAdapter) {
+//            this.geocacheAdapter = geocacheAdapter;
+//        }
+//
+//        @Override
+//        protected Geocache doInBackground(String... params) {
+//            String geocacheId = params[0];
+//            return GeocacheFetcher.fetchGeocacheDetails(geocacheId); // 在后台线程中执行网络请求
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Geocache geocache) {
+//            if (geocache != null) {
+//                // 更新 UI 或处理数据
+//                geocacheList.add(geocache);
+//                geocacheAdapter.notifyDataSetChanged();
+//            } else {
+//                Log.e("FetchGeocacheDetailsTask", "Failed to fetch details for geocache");
+//            }
+//        }
+//    }
+
+    private class FetchGeocacheDetailsTask extends AsyncTask<String, Void, Geocache> {
+        private GeocacheAdapter geocacheAdapter;
+
+        FetchGeocacheDetailsTask(GeocacheAdapter geocacheAdapter) {
+            this.geocacheAdapter = geocacheAdapter;
+        }
+
+        @Override
+        protected Geocache doInBackground(String... params) {
+            String geocacheId = params[0];
+            return GeocacheFetcher.fetchGeocacheDetails(geocacheId); // Fetch geocache details in background
+        }
+
+        @Override
+        protected void onPostExecute(Geocache geocache) {
+            if (geocache != null) {
+                // Add the fetched geocache to the list
+                geocacheList.add(geocache);
+                geocacheAdapter.notifyDataSetChanged();
+
+                LatLng position = new LatLng(
+                        geocache.getLatitude().doubleValue(),   // Convert BigDecimal to double
+                        geocache.getLongitude().doubleValue()   // Convert BigDecimal to double
+                );
+
+                MarkerOptions markerOptions = new MarkerOptions()
+                        .position(position)
+                        .title(geocache.getName()) // Title or other info
+                        .snippet(geocache.getType()) // Type or other info
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.geo_star)); // Custom icon
+
+                // Ensure that AMap is initialized before adding the marker
+                if (aMap != null) {
+                    aMap.addMarker(markerOptions);
+                } else {
+                    Log.e("FetchGeocacheDetailsTask", "AMap is not initialized");
+                }
+            } else {
+                Log.e("FetchGeocacheDetailsTask", "Failed to fetch details for geocache");
+            }
+        }
+    }
+
+    public interface GeocacheDataCallback {
+        void onDataLoaded(List<Geocache> geocacheList);
+    }
     /**
      * 激活定位
      *
