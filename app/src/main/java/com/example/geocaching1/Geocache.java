@@ -20,7 +20,7 @@ public class Geocache implements Parcelable {
     private Date foundAt;
 
     // 日期格式
-    private static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+    public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
     public Geocache(String code, String name, BigDecimal latitude, BigDecimal longitude, String status, String type, Date foundAt) {
         this.code = code;
@@ -111,6 +111,7 @@ public class Geocache implements Parcelable {
     }
 
     public String getLocation() {
-        return "Latitude: " + latitude + ", Longitude: " + longitude;
+        return latitude + "|" + longitude;
     }
+
 }
