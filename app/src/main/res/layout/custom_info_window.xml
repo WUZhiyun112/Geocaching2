@@ -1,41 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="100dp"
-    android:layout_height="100dp"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:background="@mipmap/custom_info_bubble"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:padding="10dp" >
 
+    <!-- 显示徽章的ImageView -->
     <ImageView
         android:id="@+id/badge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginRight="5dp" >
-    </ImageView>
+        android:layout_marginRight="5dp" />
 
+    <!-- 包含标题和片段的垂直布局 -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical" >
+        android:orientation="vertical"
+        android:gravity="center_vertical">
 
+        <!-- 标题TextView -->
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="#ff000000"
             android:textSize="14dp"
             android:textStyle="bold" />
 
+        <!-- 片段TextView -->
         <TextView
             android:id="@+id/snippet"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="#ff7f7f7f"
+            android:textColor="#7f7f7f"
             android:textSize="14dp" />
+    </LinearLayout>
+
+    <!-- 水平布局来放置按钮 -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="10dp"
+        android:gravity="center_vertical">
+
+        <!-- 导航按钮 -->
+        <Button
+            android:id="@+id/btn_navigate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="导航"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/black" />
+
+        <!-- 详情按钮 -->
+        <Button
+            android:id="@+id/btn_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="详情"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/black"
+            android:layout_marginLeft="10dp" />
     </LinearLayout>
 
 </LinearLayout>

@@ -4,6 +4,8 @@ import static com.example.geocaching1.utils.MapUtil.convertToLatLonPoint;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -36,6 +38,7 @@ import com.amap.api.services.geocoder.GeocodeAddress;
 import com.amap.api.services.geocoder.GeocodeQuery;
 import com.amap.api.services.geocoder.GeocodeResult;
 import com.amap.api.services.geocoder.GeocodeSearch;
+import com.amap.api.services.geocoder.RegeocodeQuery;
 import com.amap.api.services.geocoder.RegeocodeResult;
 import com.amap.api.services.route.BusPath;
 import com.amap.api.services.route.BusRouteResult;
@@ -108,6 +111,20 @@ public class RouteActivity extends AppCompatActivity implements
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        TRAVEL_MODE = 0;
+        Intent intent = getIntent();
+        if (intent != null) {
+            double latitude = intent.getDoubleExtra("latitude", 0);
+            double longitude = intent.getDoubleExtra("longitude", 0);
+
+            Log.d("RouteActivity", "Received Latitude: " + latitude + ", Longitude: " + longitude);
+            Toast.makeText(this, "Received Latitude: " + latitude + ", Longitude: " + longitude, Toast.LENGTH_SHORT).show();
+            if (latitude != 0 && longitude != 0) {
+                // 设置终点坐标
+                mEndPoint = convertToLatLonPoint(new LatLng(latitude, longitude));
+            }
+            getAddressFromLatLng(latitude, longitude);
+        }
         //初始化定位
         initLocation();
         //初始化地图
@@ -135,28 +152,71 @@ public class RouteActivity extends AppCompatActivity implements
     /**
      * 初始化出行方式
      */
+    /**
+     * 初始化出行方式
+     */
     private void initTravelMode() {
-        //将可选内容与ArrayAdapter连接起来
+        // 将可选内容与ArrayAdapter连接起来
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, travelModeArray);
-        //设置下拉列表的风格
+        // 设置下拉列表的风格
         arrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        //将adapter 添加到spinner中
+        // 将adapter 添加到spinner中
         binding.spinner.setAdapter(arrayAdapter);
-        //添加事件Spinner事件监听
+
+        // 根据两地间距设置默认出行方式
+        if (mStartPoint != null && mEndPoint != null) {
+            double distance = calculateDistance(mStartPoint, mEndPoint);
+            if (distance > 10) {
+                TRAVEL_MODE = 2; // 驾车出行
+            } else {
+                TRAVEL_MODE = 0; // 步行出行
+            }
+        } else {
+            TRAVEL_MODE = 0; // 如果没有目的地，默认步行出行
+        }
+
+        // 设置 Spinner 的默认选中项
+        binding.spinner.setSelection(TRAVEL_MODE);
+
+        // 添加事件Spinner事件监听
         binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                TRAVEL_MODE = position;
+                TRAVEL_MODE = position; // 更新出行方式
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
             }
         });
-        //起点 键盘按键监听
+
+        // 起点 键盘按键监听
         binding.etStartAddress.setOnKeyListener(this);
-        //终点 键盘按键监听
+        // 终点 键盘按键监听
         binding.etEndAddress.setOnKeyListener(this);
+    }
+
+    /**
+     * 计算两地之间的距离（单位：公里）
+     */
+    private double calculateDistance(LatLonPoint start, LatLonPoint end) {
+        if (start == null || end == null) {
+            return 0;
+        }
+        double lat1 = start.getLatitude();
+        double lon1 = start.getLongitude();
+        double lat2 = end.getLatitude();
+        double lon2 = end.getLongitude();
+
+        // 使用 Haversine 公式计算两地距离
+        double R = 6371; // 地球半径（单位：公里）
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c; // 返回距离（单位：公里）
     }
 
     /**
@@ -191,7 +251,7 @@ public class RouteActivity extends AppCompatActivity implements
         //初始化地图控制器对象
         aMap = binding.mapView.getMap();
         //设置最小缩放等级为12 ，缩放级别范围为[3, 20]
-        aMap.setMinZoomLevel(12);
+        aMap.setMinZoomLevel(5);
         //开启室内地图
         aMap.showIndoorMap(true);
         //实例化UiSettings类对象
@@ -219,34 +279,104 @@ public class RouteActivity extends AppCompatActivity implements
         //设置监听
         geocodeSearch.setOnGeocodeSearchListener(this);
     }
+    /**
+     * 根据经纬度获取地址名称（逆地理编码）
+     */
+
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private void getAddressFromLatLng(double latitude, double longitude) {
+        if (!isNetworkAvailable()) {
+            Toast.makeText(this, "网络不可用，请检查网络连接", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // 创建逆地理编码查询对象
+        LatLonPoint point = new LatLonPoint(latitude, longitude);
+        RegeocodeQuery query = new RegeocodeQuery(point, 200, GeocodeSearch.AMAP);
+
+        // 初始化 GeocodeSearch
+        try {
+            geocodeSearch = new GeocodeSearch(this);
+        } catch (AMapException e) {
+            e.printStackTrace();
+            Log.e("RouteActivity", "GeocodeSearch 初始化失败: " + e.getMessage());
+            return;
+        }
+
+        geocodeSearch.setOnGeocodeSearchListener(new GeocodeSearch.OnGeocodeSearchListener() {
+            @Override
+            public void onRegeocodeSearched(RegeocodeResult regeocodeResult, int rCode) {
+                if (rCode == AMapException.CODE_AMAP_SUCCESS) {
+                    if (regeocodeResult != null && regeocodeResult.getRegeocodeAddress() != null) {
+                        // 获取地址名称
+                        String address = regeocodeResult.getRegeocodeAddress().getFormatAddress();
+                        // 将地址名称设置到目的地输入框
+                        runOnUiThread(() -> {
+                            if (!isFinishing() && !isDestroyed()) {
+                                binding.etEndAddress.setText(address);
+                            }
+                        });
+                    } else {
+                        Log.e("RouteActivity", "逆地理编码结果为空");
+                    }
+                } else {
+                    Log.e("RouteActivity", "逆地理编码失败，错误码：" + rCode);
+                    runOnUiThread(() -> {
+                        if (!isFinishing() && !isDestroyed()) {
+                            Toast.makeText(RouteActivity.this, "逆地理编码失败，错误码：" + rCode, Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onGeocodeSearched(GeocodeResult geocodeResult, int i) {
+                // 不需要处理
+            }
+        });
+
+        // 开始逆地理编码
+        geocodeSearch.getFromLocationAsyn(query);
+    }
 
     @Override
     public void onLocationChanged(AMapLocation aMapLocation) {
         if (aMapLocation != null) {
             if (aMapLocation.getErrorCode() == 0) {
-                //获取纬度
+                // 获取纬度
                 double latitude = aMapLocation.getLatitude();
-                //获取经度
+                // 获取经度
                 double longitude = aMapLocation.getLongitude();
-                //地址
+                // 地址
                 locationAddress = aMapLocation.getAddress();
-                //设置当前所在地
+                // 设置当前所在地
                 binding.etStartAddress.setText(locationAddress);
-                //binding.etStartAddress.setEnabled(false);//禁用输入
                 // 城市赋值
                 city = aMapLocation.getCity();
-                //设置起点
+                // 设置起点
                 mStartPoint = MapUtil.convertToLatLonPoint(new LatLng(latitude, longitude));
-                //停止定位后，本地定位服务并不会被销毁
+                // 停止定位后，本地定位服务并不会被销毁
                 mLocationClient.stopLocation();
-                //显示地图定位结果
+                // 显示地图定位结果
                 if (mListener != null) {
                     // 显示系统图标
                     mListener.onLocationChanged(aMapLocation);
                 }
 
+                // 更新默认出行方式
+                initTravelMode();
+
+                if (mEndPoint != null) {
+                    startRouteSearch();
+                }
             } else {
-                //定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
+                // 定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
                 Log.e("AmapError", "location Error, ErrCode:"
                         + aMapLocation.getErrorCode() + ", errInfo:"
                         + aMapLocation.getErrorInfo());
@@ -359,9 +489,11 @@ public class RouteActivity extends AppCompatActivity implements
      */
     @Override
     public void onMapClick(LatLng latLng) {
-        //终点
+        // 终点
         mEndPoint = convertToLatLonPoint(latLng);
-        //开始路线搜索
+        // 更新默认出行方式
+        initTravelMode();
+        // 开始路线搜索
         startRouteSearch();
     }
 
@@ -586,20 +718,24 @@ public class RouteActivity extends AppCompatActivity implements
             showMsg("获取坐标失败，错误码：" + rCode);
             return;
         }
+
         List<GeocodeAddress> geocodeAddressList = geocodeResult.getGeocodeAddressList();
         if (geocodeAddressList != null && !geocodeAddressList.isEmpty()) {
-            //判断是不是起点的搜索
+            // 判断是不是起点的搜索
             if (tag == 1) {
-                //起点
+                // 起点
                 mStartPoint = geocodeAddressList.get(0).getLatLonPoint();
             } else {
-                //终点
+                // 终点
                 mEndPoint = geocodeAddressList.get(0).getLatLonPoint();
             }
+            initTravelMode();
             if (mStartPoint != null && mEndPoint != null) {
-                //开始路线搜索
+                // 开始路线搜索
                 startRouteSearch();
             }
+        } else {
+            showMsg("未找到相关地址信息");
         }
     }
 

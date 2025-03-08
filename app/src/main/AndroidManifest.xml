@@ -64,7 +64,7 @@
         <service android:name="com.amap.api.location.APSService" /> <!-- 高德的Key  value里面的值请使用自己的Key -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
-            android:value="ab4d9ea051b724cb6ae76782287bd870" />
+            android:value="0f553dc202939292c9d46f60892603a8" />
     </application>
 
 </manifest>

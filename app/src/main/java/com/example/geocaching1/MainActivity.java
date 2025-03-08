@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -850,10 +851,11 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
      * @param view
      */
     private void render(Marker marker, View view) {
+        // 设置徽章图片
         ((ImageView) view.findViewById(R.id.badge))
                 .setImageResource(R.mipmap.ic_location);
 
-        //修改InfoWindow标题内容样式
+        // 修改InfoWindow标题内容和样式
         String title = marker.getTitle();
         TextView titleUi = ((TextView) view.findViewById(R.id.title));
         if (title != null) {
@@ -862,11 +864,11 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
                     titleText.length(), 0);
             titleUi.setTextSize(15);
             titleUi.setText(titleText);
-
         } else {
             titleUi.setText("");
         }
-        //修改InfoWindow片段内容样式
+
+        // 修改InfoWindow片段内容和样式
         String snippet = marker.getSnippet();
         TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
         if (snippet != null) {
@@ -878,7 +880,34 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         } else {
             snippetUi.setText("");
         }
+
+        // 设置“导航”按钮的点击监听器
+        Button navigateButton = view.findViewById(R.id.btn_navigate);
+        navigateButton.setOnClickListener(v -> {
+            // 获取经纬度信息
+            double latitude = marker.getPosition().latitude;
+            double longitude = marker.getPosition().longitude;
+
+            Log.d("NavigationButton", "Latitude: " + latitude + ", Longitude: " + longitude);
+            Toast.makeText(view.getContext(), "Latitude: " + latitude + ", Longitude: " + longitude, Toast.LENGTH_SHORT).show();
+
+            // 创建Intent对象，跳转到RouteActivity
+            Intent intent = new Intent(view.getContext(), RouteActivity.class);
+            // 将经纬度信息作为Extra传递
+            intent.putExtra("latitude", latitude);
+            intent.putExtra("longitude", longitude);
+            // 启动RouteActivity
+            view.getContext().startActivity(intent);
+        });
+
+        // 设置“详情”按钮的点击监听器
+        Button detailsButton = view.findViewById(R.id.btn_details);
+        detailsButton.setOnClickListener(v -> {
+            // 处理详情逻辑
+            Toast.makeText(view.getContext(), "详情按钮点击！", Toast.LENGTH_SHORT).show();
+        });
     }
+
 
     /**
      * InfoWindow点击事件
