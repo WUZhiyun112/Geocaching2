@@ -130,6 +130,8 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     //标点列表
     private final List<Marker> markerList = new ArrayList<>();
 
+    private Marker selectedMarker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         requestPermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
@@ -281,13 +283,31 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             aMap.setMinZoomLevel(5);
             // 开启室内地图
             aMap.showIndoorMap(true);
-            // 设置地图点击事件
-            aMap.setOnMapClickListener(this);
+//            // 设置地图点击事件
+//            aMap.setOnMapClickListener(this);
             // 设置地图长按事件
             aMap.setOnMapLongClickListener(this);
-            // 设置地图标点点击事件
-            aMap.setOnMarkerClickListener(this);
+//            // 设置地图标点点击事件
+//            aMap.setOnMarkerClickListener(this);
             // 设置地图标点拖拽事件
+            aMap.setOnMapClickListener(latLng -> {
+                if (selectedMarker != null && selectedMarker.isInfoWindowShown()) {
+                    selectedMarker.hideInfoWindow();
+                    selectedMarker = null; // 清空记录
+                }
+            });
+
+            // 设置地图标点点击事件
+            aMap.setOnMarkerClickListener(marker -> {
+                if (!marker.isInfoWindowShown()) {
+                    marker.showInfoWindow();
+                    selectedMarker = marker; // 记录当前打开的 Marker
+                } else {
+                    marker.hideInfoWindow();
+                    selectedMarker = null; // 关闭时清空记录
+                }
+                return true; // 事件已处理
+            });
             aMap.setOnMarkerDragListener(this);
             // 设置InfoWindowAdapter监听
             aMap.setInfoWindowAdapter(this);
@@ -786,8 +806,10 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         // 显示或隐藏 InfoWindow
         if (!marker.isInfoWindowShown()) { // 如果 InfoWindow 没有显示
             marker.showInfoWindow(); // 显示 InfoWindow
+            selectedMarker = marker;
         } else { // 如果 InfoWindow 已经显示
             marker.hideInfoWindow(); // 隐藏 InfoWindow
+            selectedMarker = null;
         }
 
         // 获取 Marker 关联的 Geocache 对象

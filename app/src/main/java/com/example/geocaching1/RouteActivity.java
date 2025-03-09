@@ -770,7 +770,7 @@ public class RouteActivity extends AppCompatActivity implements
             //当出发地输入框有值的时候，判断这个值是否是定位的地址，是则说明你没有更改过，则不需要进行地址转坐标，不是则需要转换。
             if (!locationAddress.equals(startAddress)) {
                 tag = 1;
-                GeocodeQuery startQuery = new GeocodeQuery(startAddress, city);
+                GeocodeQuery startQuery = new GeocodeQuery(startAddress, null);
                 geocodeSearch.getFromLocationNameAsyn(startQuery);
             } else {
                 tag = -1;
@@ -783,7 +783,7 @@ public class RouteActivity extends AppCompatActivity implements
             //通过输入的目的地转为经纬度，然后进行地图上添加标点，最后计算出行路线规划
 
             // name表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode
-            GeocodeQuery endQuery = new GeocodeQuery(endAddress, city);
+            GeocodeQuery endQuery = new GeocodeQuery(endAddress, null);
             geocodeSearch.getFromLocationNameAsyn(endQuery);
             return true;
         }
