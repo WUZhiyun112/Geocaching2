@@ -732,7 +732,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         // 通过经纬度获取地址
         latLonToAddress(latLng);
         // 点击地图时添加标点
-        addMarker(latLng);
+//        addMarker(latLng);
         // 改变地图中心点
         updateMapCenter(latLng);
     }
@@ -860,9 +860,6 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         TextView titleUi = ((TextView) view.findViewById(R.id.title));
         if (title != null) {
             SpannableString titleText = new SpannableString(title);
-            titleText.setSpan(new ForegroundColorSpan(Color.parseColor("#D24735")), 0,
-                    titleText.length(), 0);
-            titleUi.setTextSize(15);
             titleUi.setText(titleText);
         } else {
             titleUi.setText("");
@@ -873,9 +870,6 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         TextView snippetUi = ((TextView) view.findViewById(R.id.snippet));
         if (snippet != null) {
             SpannableString snippetText = new SpannableString(snippet);
-            snippetText.setSpan(new ForegroundColorSpan(Color.parseColor("#5b9953")), 0,
-                    snippetText.length(), 0);
-            snippetUi.setTextSize(20);
             snippetUi.setText(snippetText);
         } else {
             snippetUi.setText("");

@@ -83,7 +83,8 @@ public class RouteActivity extends AppCompatActivity implements
     //路线搜索对象
     private RouteSearch routeSearch;
     //出行方式数组
-    private static final String[] travelModeArray = {"步行出行", "骑行出行", "驾车出行", "公交出行"};
+//    private static final String[] travelModeArray = {"步行出行", "骑行出行", "驾车出行", "公交出行"};
+    private static final String[] travelModeArray = {"Walking", "Riding", "Driving", "Public Transit"};
 
     //出行方式值
     private static int TRAVEL_MODE = 0;
@@ -163,7 +164,7 @@ public class RouteActivity extends AppCompatActivity implements
         // 将adapter 添加到spinner中
         binding.spinner.setAdapter(arrayAdapter);
 
-        // 根据两地间距设置默认出行方式
+        // 仅在起点和终点都已设置时计算默认出行模式
         if (mStartPoint != null && mEndPoint != null) {
             double distance = calculateDistance(mStartPoint, mEndPoint);
             if (distance > 10) {
@@ -172,7 +173,7 @@ public class RouteActivity extends AppCompatActivity implements
                 TRAVEL_MODE = 0; // 步行出行
             }
         } else {
-            TRAVEL_MODE = 0; // 如果没有目的地，默认步行出行
+            TRAVEL_MODE = 0; // 如果起点或终点未设置，默认步行出行
         }
 
         // 设置 Spinner 的默认选中项
@@ -182,7 +183,12 @@ public class RouteActivity extends AppCompatActivity implements
         binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                TRAVEL_MODE = position; // 更新出行方式
+                TRAVEL_MODE = position; // 更新出行模式
+
+                // 如果起点和终点都已设置，自动触发路线搜索
+                if (mStartPoint != null && mEndPoint != null) {
+                    startRouteSearch();
+                }
             }
 
             @Override
@@ -369,11 +375,10 @@ public class RouteActivity extends AppCompatActivity implements
                     mListener.onLocationChanged(aMapLocation);
                 }
 
-                // 更新默认出行方式
-                initTravelMode();
-
+                // 如果终点已设置，更新默认出行模式并触发路线搜索
                 if (mEndPoint != null) {
-                    startRouteSearch();
+                    initTravelMode(); // 更新默认出行模式
+                    startRouteSearch(); // 触发路线搜索
                 }
             } else {
                 // 定位失败时，可通过ErrCode（错误码）信息来确定失败的原因，errInfo是错误信息，详见错误码表。
@@ -608,16 +613,19 @@ public class RouteActivity extends AppCompatActivity implements
     @Override
     public void onWalkRouteSearched(WalkRouteResult walkRouteResult, int code) {
         aMap.clear();// 清理地图上的所有覆盖物
-        if (code != AMapException.CODE_AMAP_SUCCESS) {
+
+        if (code == 3003){
+            showMsg("The place is too far for walking, please choose another way." );
+        }else if (code != AMapException.CODE_AMAP_SUCCESS) {
             showMsg("错误码；" + code);
             return;
         }
         if (walkRouteResult == null || walkRouteResult.getPaths() == null) {
-            showMsg("对不起，没有搜索到相关数据！");
+            showMsg("Sorry, no data was found!");
             return;
         }
         if (walkRouteResult.getPaths().isEmpty()) {
-            showMsg("对不起，没有搜索到相关数据！");
+            showMsg("Sorry, no data was found!");
             return;
         }
         final WalkPath walkPath = walkRouteResult.getPaths().get(0);
@@ -729,10 +737,11 @@ public class RouteActivity extends AppCompatActivity implements
                 // 终点
                 mEndPoint = geocodeAddressList.get(0).getLatLonPoint();
             }
-            initTravelMode();
+
+            // 如果起点和终点都已设置，更新默认出行模式并触发路线搜索
             if (mStartPoint != null && mEndPoint != null) {
-                // 开始路线搜索
-                startRouteSearch();
+                initTravelMode(); // 更新默认出行模式
+                startRouteSearch(); // 触发路线搜索
             }
         } else {
             showMsg("未找到相关地址信息");
@@ -749,12 +758,12 @@ public class RouteActivity extends AppCompatActivity implements
 
             //判断出发地是否有值  不管这个值是定位还是手动输入
             if (startAddress.isEmpty()) {
-                showMsg("请输入当前的出发地");
+                showMsg("Please enter your departure point.");
                 return false;
             }
             //判断目的地是否有值
             if (endAddress.isEmpty()) {
-                showMsg("请输入要前往的目的地");
+                showMsg("Please enter the destination.");
                 return false;
             }
 
