@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.geocaching1.GeocacheAdapter;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.util.ArrayList;
@@ -43,9 +42,6 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // 初始化底部导航栏
-        initBottomNavigation();
-
         // 初始化筛选条
         initFilterBar();
 
@@ -57,24 +53,6 @@ public class DashboardActivity extends AppCompatActivity {
 
     }
 
-    private void initBottomNavigation() {
-        BottomNavigationView navView = findViewById(R.id.bottom_navigation);
-
-        navView.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.navigation_home) {
-                startActivity(new Intent(DashboardActivity.this, MainActivity.class));
-                return true;
-            } else if (itemId == R.id.navigation_dashboard) {
-                return true; // 当前页面，无需跳转
-            } else if (itemId == R.id.navigation_self) {
-                startActivity(new Intent(DashboardActivity.this, SelfActivity.class));
-                return true;
-            }
-            return false;
-        });
-    }
 
 
     /**

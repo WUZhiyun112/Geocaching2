@@ -212,26 +212,26 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
      */
     private void initView() {
         // Poi搜索按钮点击事件
-        binding.fabPoi.setOnClickListener(v -> {
-            //构造query对象
-            query = new PoiSearch.Query("购物", "", cityCode);
-            // 设置每页最多返回多少条poiItem
-            query.setPageSize(10);
-            //设置查询页码
-            query.setPageNum(1);
-            //构造 PoiSearch 对象
-            try {
-                poiSearch = new PoiSearch(this, query);
-                //设置搜索回调监听
-                poiSearch.setOnPoiSearchListener(this);
-                //发起搜索附近POI异步请求
-                poiSearch.searchPOIAsyn();
-            } catch (AMapException e) {
-                throw new RuntimeException(e);
-            }
-        });
-        // 清除标点按钮点击事件
-        binding.fabClearMarker.setOnClickListener(v -> clearAllMarker());
+//        binding.fabPoi.setOnClickListener(v -> {
+//            //构造query对象
+//            query = new PoiSearch.Query("购物", "", cityCode);
+//            // 设置每页最多返回多少条poiItem
+//            query.setPageSize(10);
+//            //设置查询页码
+//            query.setPageNum(1);
+//            //构造 PoiSearch 对象
+//            try {
+//                poiSearch = new PoiSearch(this, query);
+//                //设置搜索回调监听
+//                poiSearch.setOnPoiSearchListener(this);
+//                //发起搜索附近POI异步请求
+//                poiSearch.searchPOIAsyn();
+//            } catch (AMapException e) {
+//                throw new RuntimeException(e);
+//            }
+//        });
+//        // 清除标点按钮点击事件
+//        binding.fabClearMarker.setOnClickListener(v -> clearAllMarker());
         // 路线按钮点击事件
         binding.fabRoute.setOnClickListener(v -> startActivity(new Intent(this, RouteActivity.class)));
         // 键盘按键监听
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
                     imm.hideSoftInputFromWindow(getWindow().getDecorView().getWindowToken(), 0);
 
                     // name表示地址，第二个参数表示查询城市，中文或者中文全拼，citycode、adcode
-                    GeocodeQuery query = new GeocodeQuery(address, city);
+                    GeocodeQuery query = new GeocodeQuery(address, null);
                     geocodeSearch.getFromLocationNameAsyn(query);
                 }
                 return true;
@@ -440,7 +440,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
                 mListener.onLocationChanged(aMapLocation);
             }
             // 显示浮动按钮
-            binding.fabPoi.show();
+//            binding.fabPoi.show();
             // 城市编码赋值
             cityCode = aMapLocation.getCityCode();
             // 城市
@@ -699,7 +699,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
      */
     private void addMarker(LatLng latLng) {
         //显示浮动按钮
-        binding.fabClearMarker.show();
+//        binding.fabClearMarker.show();
         //添加标点
         Marker marker = aMap.addMarker(new MarkerOptions()
                 .draggable(true)
@@ -728,7 +728,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
                 markerItem.remove();
             }
         }
-        binding.fabClearMarker.hide();
+//        binding.fabClearMarker.hide();
     }
 
     /**
