@@ -87,7 +87,7 @@ public class GeocacheFetcher {
             String requestUrl = "https://www.opencaching.de/okapi/services/caches/geocache" +
                     "?consumer_key=" + API_KEY +
                     "&cache_code=" + cacheCode +
-                    "&fields=code|name|location|type|status" +
+                    "&fields=code|name|location|type|status|difficulty|size|description" +
                     "&format=json";
 
             URL url = new URL(requestUrl);
@@ -138,13 +138,20 @@ public class GeocacheFetcher {
                 BigDecimal latitude = new BigDecimal(location[0]);
                 BigDecimal longitude = new BigDecimal(location[1]);
 
-                return new Geocache(code, name, latitude, longitude, status, type, new Date());
+                // 获取新的字段
+                String description = cacheObject.getString("description");
+                String size = cacheObject.getString("size");
+                String difficulty = cacheObject.getString("difficulty");
+
+                // 返回包含新字段的 Geocache 对象
+                return new Geocache(code, name, latitude, longitude, status, type, new Date(), description, size, difficulty);
             }
         } catch (Exception e) {
             Log.e("GeocacheFetcher", "JSON Parsing Error: ", e);
         }
         return null;
     }
+
 
     public static List<Geocache> parseGeocaches(String jsonResponse) {
         List<Geocache> geocacheList = new ArrayList<>();
@@ -171,6 +178,11 @@ public class GeocacheFetcher {
                 String type = cacheObject.getString("type");
                 String status = cacheObject.getString("status");
 
+                // 获取新的字段
+                String description = cacheObject.getString("description");
+                String size = cacheObject.getString("size");
+                String difficulty = cacheObject.getString("difficulty");
+
                 // 解析 foundAt 时间
                 String foundAtString = cacheObject.getString("foundAt");
                 Date foundAt = null;
@@ -181,7 +193,8 @@ public class GeocacheFetcher {
                 }
 
                 // 创建 Geocache 对象
-                Geocache geocache = new Geocache(code, name, longitude, latitude, status, type, foundAt);
+                Geocache geocache = new Geocache(code, name, latitude, longitude, status, type, foundAt, description, size, difficulty);
+
                 geocacheList.add(geocache);
             }
         } catch (Exception e) {
@@ -189,6 +202,7 @@ public class GeocacheFetcher {
         }
         return geocacheList;
     }
+
 
 
 

@@ -41,6 +41,7 @@
                 android:layout_marginStart="8dp"
                 android:popupBackground="@android:color/white"
                 android:singleLine="true"
+                android:text="type"
                 android:textSize="10sp"
                 android:textStyle="bold"
                 android:textColor="#396034" />
@@ -63,6 +64,7 @@
                 android:entries="@array/status_array"
                 android:inputType="none"
                 android:popupBackground="@android:color/white"
+                android:text="status"
                 android:singleLine="true"
                 android:textSize="10sp"
                 app:paddingStart="0dp"
@@ -103,6 +105,7 @@
                 android:entries="@array/distance_array"
                 android:inputType="none"
                 android:popupBackground="@android:color/white"
+                android:text="distance"
                 android:singleLine="true"
                 android:textSize="10sp"
                 app:paddingStart="0dp"

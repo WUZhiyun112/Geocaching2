@@ -919,8 +919,23 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         // 设置“详情”按钮的点击监听器
         Button detailsButton = view.findViewById(R.id.btn_details);
         detailsButton.setOnClickListener(v -> {
-            // 处理详情逻辑
-            Toast.makeText(view.getContext(), "详情按钮点击！", Toast.LENGTH_SHORT).show();
+            // 获取 Marker 关联的 Geocache 对象
+            Geocache geocache = (Geocache) marker.getObject();
+            if (geocache == null) {
+                Toast.makeText(view.getContext(), "Geocache 数据为空", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (geocache != null) {
+                // 创建 Intent，跳转到 GeocacheDetailActivity
+                Intent intent = new Intent(view.getContext(), GeocacheDetailActivity.class);
+                // 传递 Geocache 对象
+                intent.putExtra("geocache", geocache);
+                // 启动 GeocacheDetailActivity
+                view.getContext().startActivity(intent);
+            } else {
+                Toast.makeText(view.getContext(), "Geocache 数据为空", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

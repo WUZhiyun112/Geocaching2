@@ -38,7 +38,7 @@ public class GeocacheAdapter extends RecyclerView.Adapter<GeocacheAdapter.Geocac
 
             // 点击每个 item 进入详情页
             holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, GeocacheDetailsActivity.class);
+                Intent intent = new Intent(context, GeocacheDetailActivity.class);
                 intent.putExtra("geocache", geocache); // 传递整个 Geocache 对象
                 context.startActivity(intent);
             });

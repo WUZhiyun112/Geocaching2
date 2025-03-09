@@ -18,11 +18,15 @@ public class Geocache implements Parcelable {
     private String status;
     private String type;
     private Date foundAt;
+    private String description;  // 新增字段
+    private String size;         // 新增字段
+    private String difficulty;   // 新增字段
 
     // 日期格式
     public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
 
-    public Geocache(String code, String name, BigDecimal latitude, BigDecimal longitude, String status, String type, Date foundAt) {
+    // 更新构造函数，新增字段
+    public Geocache(String code, String name, BigDecimal latitude, BigDecimal longitude, String status, String type, Date foundAt, String description, String size, String difficulty) {
         this.code = code;
         this.name = name;
         this.latitude = latitude;
@@ -30,6 +34,9 @@ public class Geocache implements Parcelable {
         this.status = status;
         this.type = type;
         this.foundAt = foundAt;
+        this.description = description;
+        this.size = size;
+        this.difficulty = difficulty;
     }
 
     // Parcelable implementation
@@ -49,6 +56,11 @@ public class Geocache implements Parcelable {
             Log.e("Geocache", "Date parsing error: " + e.getMessage());
             foundAt = null;
         }
+
+        // 读取新增字段
+        description = in.readString();
+        size = in.readString();
+        difficulty = in.readString();
     }
 
     public static final Creator<Geocache> CREATOR = new Creator<Geocache>() {
@@ -79,6 +91,11 @@ public class Geocache implements Parcelable {
 
         // 写入时间
         dest.writeString(foundAt != null ? DATE_FORMATTER.format(foundAt) : null);
+
+        // 写入新增字段
+        dest.writeString(description);
+        dest.writeString(size);
+        dest.writeString(difficulty);
     }
 
     // Getters
@@ -110,8 +127,19 @@ public class Geocache implements Parcelable {
         return foundAt;
     }
 
+    public String getDescription() {
+        return description;  // Getter for description
+    }
+
+    public String getSize() {
+        return size;  // Getter for size
+    }
+
+    public String getDifficulty() {
+        return difficulty;  // Getter for difficulty
+    }
+
     public String getLocation() {
         return latitude + "|" + longitude;
     }
-
 }
