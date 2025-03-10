@@ -39,6 +39,12 @@ public class Geocache implements Parcelable {
         this.difficulty = difficulty;
     }
 
+    public Geocache(String code, String name, String difficulty) {
+        this.code = code;
+        this.name = name;
+        this.difficulty = difficulty;
+    }
+
     // Parcelable implementation
     protected Geocache(Parcel in) {
         code = in.readString();

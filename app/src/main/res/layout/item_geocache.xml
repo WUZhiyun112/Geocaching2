@@ -1,0 +1,19 @@
+<!-- res/layout/item_geocache.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground">
+
+    <!-- Geocache Code -->
+    <TextView
+        android:id="@+id/geocache_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Geocache Code"
+        android:textSize="16sp"/>
+
+
+
+</LinearLayout>

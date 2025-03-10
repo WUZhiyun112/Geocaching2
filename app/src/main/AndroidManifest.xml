@@ -55,6 +55,9 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
+            android:name=".FollowedGeocachesActivity"
+            android:exported="false" />
+        <activity
             android:name=".EnterActivity"
             android:exported="true">
             <intent-filter>
