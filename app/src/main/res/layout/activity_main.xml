@@ -24,7 +24,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="@drawable/et_bg"
-            android:hint="请输入地址"
+            android:hint="请输入地址 Please enter an address"
             android:imeOptions="actionSearch"
             android:paddingStart="12dp"
             android:singleLine="true"

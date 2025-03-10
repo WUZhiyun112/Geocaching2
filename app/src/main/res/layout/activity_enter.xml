@@ -8,14 +8,15 @@
     android:background="#68945c"
     tools:context=".EnterActivity">
 
+    <!-- 标题 -->
     <TextView
         android:layout_width="300dp"
         android:layout_height="100dp"
-        android:text="Let’s Geocache!"
-        android:gravity="center"
-        android:textSize="26sp"
-        android:textColor="#FFFFFF"
         android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:text="Let’s Geocache!"
+        android:textColor="#FFFFFF"
+        android:textSize="26sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,57 +26,63 @@
         android:id="@+id/button_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_marginBottom="32dp"
-        app:layout_constraintStart_toStartOf="parent"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent">
+        app:layout_constraintStart_toStartOf="parent">
 
+        <!-- 登录按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_login"
-            android:layout_width="wrap_content"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
-            android:text="Login"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="16sp"
+            android:layout_marginEnd="16dp"
             android:backgroundTint="#396034"
+            android:fontFamily="sans-serif-medium"
             android:paddingHorizontal="24dp"
             android:paddingVertical="12dp"
+            android:text="Login"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
             app:cornerRadius="8dp"
-            app:elevation="4dp"
-            android:layout_marginEnd="16dp" />
+            app:elevation="4dp" />
 
         <!-- 注册按钮 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_register"
-            android:layout_width="wrap_content"
+            android:layout_width="140dp"
             android:layout_height="wrap_content"
+            android:backgroundTint="#C0D09D"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
             android:text="Register"
             android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
             android:textSize="16sp"
-            android:backgroundTint="#C0D09D"
-            android:paddingHorizontal="24dp"
-            android:paddingVertical="12dp"
             app:cornerRadius="8dp"
             app:elevation="4dp" />
-
-        <!-- 测试按钮 -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_main"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Testing"
-            android:textColor="#FFFFFF"
-            android:fontFamily="sans-serif-medium"
-            android:textSize="16sp"
-            android:backgroundTint="#FF9800"
-            android:paddingHorizontal="24dp"
-            android:paddingVertical="12dp"
-            app:cornerRadius="8dp"
-            app:elevation="4dp" />
-
     </LinearLayout>
+
+    <!-- Test 按钮单独放在左上角 -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_main"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="#FF9800"
+        android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="12dp"
+        android:text="Test"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        app:cornerRadius="8dp"
+        app:elevation="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="invisible" />
+<!--        android:visibility="invisible"/>-->
 
 </androidx.constraintlayout.widget.ConstraintLayout>
