@@ -103,6 +103,7 @@ private static final String LOGIN_URL = "http://192.168.226.72:8080/api/users/lo
                 });
             }
 
+            @Override
             public void onResponse(Call call, Response response) throws IOException {
                 Log.d(TAG, "Response received, code: " + response.code());
                 if (response.isSuccessful()) {
@@ -110,19 +111,24 @@ private static final String LOGIN_URL = "http://192.168.226.72:8080/api/users/lo
                     Log.d(TAG, "Response body: " + responseBody);
 
                     try {
+                        // 解析响应 JSON
                         JSONObject responseJson = new JSONObject(responseBody);
                         String token = responseJson.getString("token");
                         String username = responseJson.getString("username");
                         String email = responseJson.getString("email");
+                        int userId = responseJson.getInt("userId");  // 获取后端返回的 userId
 
-                        saveLoginInfo(token, username, email);
+                        // 保存登录信息到 SharedPreferences
+                        saveLoginInfo(token, username, email, userId);
 
                         runOnUiThread(() -> {
                             Toast.makeText(LoginActivity.this, "登录成功！", Toast.LENGTH_SHORT).show();
+                            // 登录成功后，跳转到 MainActivity，并传递必要的参数
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                             intent.putExtra("TOKEN", token);
                             intent.putExtra("USERNAME", username);
                             intent.putExtra("EMAIL", email);
+                            intent.putExtra("USER_ID", userId);  // 传递 userId
                             startActivity(intent);
                             finish();
                         });
@@ -137,18 +143,19 @@ private static final String LOGIN_URL = "http://192.168.226.72:8080/api/users/lo
                     });
                 }
             }
-
-
         });
+
     }
 
-    private void saveLoginInfo(String token, String username, String email) {
+    private void saveLoginInfo(String token, String username, String email, int userId) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putString("JWT_TOKEN", token);
         editor.putString("USERNAME", username);
         editor.putString("EMAIL", email);
+        editor.putInt("USER_ID", userId);  // 保存 userId
         editor.apply();
     }
+
 }
 

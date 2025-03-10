@@ -142,4 +142,8 @@ public class Geocache implements Parcelable {
     public String getLocation() {
         return latitude + "|" + longitude;
     }
+    public String getGeocacheCode() {
+        return code;
+    }
+
 }
