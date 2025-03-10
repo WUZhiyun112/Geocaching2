@@ -44,26 +44,6 @@ public class SelfActivity extends AppCompatActivity {
             finish();
         });
 
-        // 底部导航栏
-        BottomNavigationView navView = findViewById(R.id.bottom_navigation);
-        navView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                int id = item.getItemId();
-
-                if (id == R.id.navigation_home) {
-                    startActivity(new Intent(SelfActivity.this, MainActivity.class));
-                    return true;
-                } else if (id == R.id.navigation_dashboard) {
-                    startActivity(new Intent(SelfActivity.this, DashboardActivity.class));
-                    return true;
-                } else if (id == R.id.navigation_self) {
-                    return true;
-                } else {
-                    return false;
-                }
-            }
-        });
     }
 
     private void updateUIFromPreferences() {
