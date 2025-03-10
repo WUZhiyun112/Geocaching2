@@ -22,9 +22,10 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private EditText usernameEditText, emailEditText, newPasswordEditText, confirmNewPasswordEditText;
     private View submitButton, updatePasswordButton;
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String VERIFY_URL = "http://10.0.2.2:8080/api/users/verify";
-    private static final String UPDATE_PASSWORD_URL = "http://10.0.2.2:8080/api/users/updatePassword";
-
+//    private static final String VERIFY_URL = "http://10.0.2.2:8080/api/users/verify";
+//    private static final String UPDATE_PASSWORD_URL = "http://10.0.2.2:8080/api/users/updatePassword";
+private static final String VERIFY_URL = "http://192.168.226.72:8080/api/users/verify";
+    private static final String UPDATE_PASSWORD_URL = "http://192.168.226.72:8080/api/users/updatePassword";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

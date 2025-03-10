@@ -2,6 +2,7 @@ package com.example.geocaching1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -9,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -28,6 +30,11 @@ public class DashboardActivity extends AppCompatActivity {
 
     private Spinner typeSpinner;
     private Spinner statusSpinner;
+
+    private int currentPage = 0; // 当前页码
+    private int pageSize = 10;   // 每页加载的数据量
+    private boolean isLoading = false; // 是否正在加载数据
+    private boolean hasMoreData = true; // 是否还有更多数据可以加载
 
     // 假设的筛选条件
     private String selectedType = null;
@@ -110,6 +117,64 @@ public class DashboardActivity extends AppCompatActivity {
         // 初始化适配器
         geocacheAdapter = new GeocacheAdapter(DashboardActivity.this, filteredGeocacheList);
         recyclerView.setAdapter(geocacheAdapter);
+
+        // 添加滚动监听器
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+
+                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if (layoutManager != null) {
+                    int visibleItemCount = layoutManager.getChildCount();
+                    int totalItemCount = layoutManager.getItemCount();
+                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+
+                    // 判断是否滚动到底部
+                    if (!isLoading && hasMoreData) {
+                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
+                                && firstVisibleItemPosition >= 0
+                                && totalItemCount >= pageSize) {
+                            loadMoreData(); // 加载更多数据
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void loadMoreData() {
+        if (!hasMoreData || isLoading) return;
+
+        isLoading = true; // 标记正在加载
+        geocacheAdapter.notifyItemInserted(geocacheList.size()); // 显示加载中
+
+        new Handler().postDelayed(() -> {
+            List<Geocache> newData = fetchDataFromSource(currentPage + 1, pageSize);
+            if (newData != null && !newData.isEmpty()) {
+                currentPage++; // 只有成功获取数据才增加页码
+                geocacheAdapter.updateData(newData, false);
+            } else {
+                hasMoreData = false; // 标记无更多数据
+            }
+            isLoading = false;
+        }, 1000);
+    }
+
+
+    private List<Geocache> fetchDataFromSource(int page, int pageSize) {
+        // 这里模拟从数据源中获取数据
+        List<Geocache> data = new ArrayList<>();
+        int start = page * pageSize;
+        int end = Math.min(start + pageSize, geocacheList.size());
+
+        if (start < geocacheList.size()) {
+            for (int i = start; i < end; i++) {
+                data.add(geocacheList.get(i));
+            }
+        }
+
+        return data;
     }
 
     /**
@@ -119,7 +184,8 @@ public class DashboardActivity extends AppCompatActivity {
         if (getIntent() != null && getIntent().hasExtra("geocacheList")) {
             geocacheList = getIntent().getParcelableArrayListExtra("geocacheList");
             if (geocacheList != null && !geocacheList.isEmpty()) {
-                filteredGeocacheList.addAll(geocacheList);
+                // 只加载第一页数据
+                filteredGeocacheList.addAll(fetchDataFromSource(currentPage, pageSize));
                 geocacheAdapter.notifyDataSetChanged();
             } else {
                 Toast.makeText(this, "No geocache data available", Toast.LENGTH_SHORT).show();
