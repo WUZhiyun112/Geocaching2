@@ -3,6 +3,7 @@ package com.example.geocaching1;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.net.ConnectivityManager;
@@ -139,8 +140,12 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                 // 根据返回的关注状态更新按钮文本
                 if (isFollowed) {
                     btnFollow.setText("Followed");
-                } else {
+                    btnFollow.setBackgroundColor(Color.GRAY); // Gray background
+                    btnFollow.setTextColor(Color.WHITE); // White text
+                } else{
                     btnFollow.setText("Follow");
+                    btnFollow.setBackgroundColor(Color.parseColor("#396034")); // Green background
+                    btnFollow.setTextColor(Color.WHITE); // White text
                 }
             }
         });
@@ -229,6 +234,9 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                 return;
             }
 
+
+
+
             // 根据关注状态选择API URL
             String apiUrl = isFollowed ?
                     "http://192.168.226.72:8080/api/follow/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
@@ -281,10 +289,14 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                             // 更新按钮文本
                             if (!isFollowed) {
                                 btnFollow.setText("Followed");
+                                btnFollow.setBackgroundColor(Color.GRAY); // Gray background
+                                btnFollow.setTextColor(Color.WHITE); // White text
                                 saveFollowStatus(geocacheCode, true);  // 保存关注状态
                                 Toast.makeText(GeocacheDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show();
                             } else {
                                 btnFollow.setText("Follow");
+                                btnFollow.setBackgroundColor(Color.parseColor("#396034")); // Green background
+                                btnFollow.setTextColor(Color.WHITE); // White text
                                 saveFollowStatus(geocacheCode, false);  // 保存取消关注状态
                                 Toast.makeText(GeocacheDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show();
                             }
