@@ -131,7 +131,19 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             uiSettings.setScrollGesturesEnabled(false); // 允许滑动
         }
 
-        checkFollowStatus(geocache);
+        checkFollowStatus(geocache, isFollowed -> {
+            if (isFollowed == null) {
+                // 如果获取关注状态失败，可以显示错误提示
+                Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败", Toast.LENGTH_SHORT).show();
+            } else {
+                // 根据返回的关注状态更新按钮文本
+                if (isFollowed) {
+                    btnFollow.setText("Followed");
+                } else {
+                    btnFollow.setText("Follow");
+                }
+            }
+        });
     }
 
     private void getAddressFromCoordinates(double latitude, double longitude) {
@@ -169,6 +181,13 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             tvLocation.setText(locationText);
         }
     }
+
+    private void saveFollowStatus(String geocacheCode, boolean isFollowed) {
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putBoolean("FOLLOWED_" + geocacheCode, isFollowed);  // 保存关注状态
+        editor.apply();
+    }
     private void toggleFollow(Geocache geocache) {
         if (!isNetworkAvailable()) {
             Toast.makeText(this, "网络不可用，请检查连接", Toast.LENGTH_SHORT).show();
@@ -199,115 +218,104 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         }
 
         String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
-        boolean isFollowed = getFollowStatus(geocacheCode);  // 获取关注状态
         Log.d("ToggleFollow", "geocacheCode: " + geocacheCode);
-        // 根据关注状态选择API URL
-        String apiUrl = isFollowed ?
-                "http://192.168.226.72:8080/api/follow/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
-                "http://192.168.226.72:8080/api/follow/add?userId=" + userId + "&geocacheCode=" + geocacheCode;
 
-        // 创建 OkHttpClient 实例并发送请求
-        OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
-
-        // 根据关注状态选择合适的请求方法（POST 或 DELETE）
-        Request request;
-        if (isFollowed) {
-            // 如果已经关注，使用 DELETE 请求
-            request = new Request.Builder()
-                    .url(apiUrl)
-                    .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
-                    .delete()  // 直接使用 DELETE 方法
-                    .build();
-        } else {
-            // 如果没有关注，使用 POST 请求并附加请求体
-            JSONObject json = new JSONObject();
-            try {
-                json.put("userId", userId);
-                json.put("geocacheCode", geocacheCode);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-            RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json"));
-
-            request = new Request.Builder()
-                    .url(apiUrl)
-                    .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
-                    .post(body)  // 使用 POST 方法并附加请求体
-                    .build();
-        }
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
-                    isRegistering = false;  // 操作完成
-                });
+        // 获取关注状态并执行相应操作
+        checkFollowStatus(geocache, isFollowed -> {
+            if (isFollowed == null) {
+                // 如果网络请求失败，标记操作完成
+                Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败，请稍后重试", Toast.LENGTH_SHORT).show();
+                isRegistering = false;
+                return;
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
+            // 根据关注状态选择API URL
+            String apiUrl = isFollowed ?
+                    "http://192.168.226.72:8080/api/follow/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
+                    "http://192.168.226.72:8080/api/follow/add?userId=" + userId + "&geocacheCode=" + geocacheCode;
+
+            // 创建 OkHttpClient 实例并发送请求
+            OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
+
+            // 根据关注状态选择合适的请求方法（POST 或 DELETE）
+            Request request;
+            if (isFollowed) {
+                // 如果已经关注，使用 DELETE 请求
+                request = new Request.Builder()
+                        .url(apiUrl)
+                        .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
+                        .delete()  // 直接使用 DELETE 方法
+                        .build();
+            } else {
+                // 如果没有关注，使用 POST 请求并附加请求体
+                JSONObject json = new JSONObject();
+                try {
+                    json.put("userId", userId);
+                    json.put("geocacheCode", geocacheCode);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                RequestBody body = RequestBody.create(json.toString(), MediaType.get("application/json"));
+
+                request = new Request.Builder()
+                        .url(apiUrl)
+                        .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
+                        .post(body)  // 使用 POST 方法并附加请求体
+                        .build();
+            }
+
+            // 发起请求
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
                     runOnUiThread(() -> {
-                        // 更新按钮文本
-                        if (!isFollowed) {
-                            btnFollow.setText("Unfollow");
-                            saveFollowStatus(geocacheCode, true);  // 保存关注状态
-                            Toast.makeText(GeocacheDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show();
-                        } else {
-                            btnFollow.setText("Follow");
-                            saveFollowStatus(geocacheCode, false);  // 保存取消关注状态
-                            Toast.makeText(GeocacheDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show();
-                        }
-                        isRegistering = false;  // 操作完成
-                    });
-                } else {
-                    runOnUiThread(() -> {
-                        try {
-                            String errorMessage = response.body() != null ? response.body().string() : "未知错误";
-                            Toast.makeText(GeocacheDetailActivity.this, "操作失败: " + errorMessage, Toast.LENGTH_SHORT).show();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                        Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
                         isRegistering = false;  // 操作完成
                     });
                 }
-            }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        runOnUiThread(() -> {
+                            // 更新按钮文本
+                            if (!isFollowed) {
+                                btnFollow.setText("Followed");
+                                saveFollowStatus(geocacheCode, true);  // 保存关注状态
+                                Toast.makeText(GeocacheDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show();
+                            } else {
+                                btnFollow.setText("Follow");
+                                saveFollowStatus(geocacheCode, false);  // 保存取消关注状态
+                                Toast.makeText(GeocacheDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show();
+                            }
+                            isRegistering = false;  // 操作完成
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            try {
+                                String errorMessage = response.body() != null ? response.body().string() : "未知错误";
+                                Toast.makeText(GeocacheDetailActivity.this, "操作失败: " + errorMessage, Toast.LENGTH_SHORT).show();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            isRegistering = false;  // 操作完成
+                        });
+                    }
+                }
+            });
         });
     }
 
-
-
-    private boolean getFollowStatus(String geocacheCode) {
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        return sharedPreferences.getBoolean("FOLLOWED_" + geocacheCode, false);  // 默认值为false
-    }
-
-    private void saveFollowStatus(String geocacheCode, boolean isFollowed) {
-        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("FOLLOWED_" + geocacheCode, isFollowed);  // 保存关注状态
-        editor.apply();
-    }
-    private void checkFollowStatus(Geocache geocache) {
-        // 从SharedPreferences中获取当前用户的ID和JWT令牌
+    private void checkFollowStatus(Geocache geocache, FollowStatusCallback callback) {
+        // 发送请求获取关注状态
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
+        int userId = prefs.getInt("USER_ID", -1);  // 获取用户ID
         String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
-
-        // 如果未登录，则提示登录
-        if (userId == -1 || token.isEmpty()) {
-            btnFollow.setText("Follow");
-            return;
-        }
 
         String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
         String apiUrl = "http://192.168.226.72:8080/api/follow/list?userId=" + userId;
 
-        // 创建 OkHttpClient 实例并发送请求
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
-
-        // 发起 GET 请求检查用户是否已关注该 geocache
         Request request = new Request.Builder()
                 .url(apiUrl)
                 .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
@@ -316,70 +324,50 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
-                runOnUiThread(() -> {
-                    Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
-                });
+                callback.onResult(null);  // 网络错误时回调
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 if (response.isSuccessful()) {
-                    String responseBody = response.body() != null ? response.body().string() : "";
-
                     try {
-                        // 解析返回的 JSON 数据
+                        String responseBody = response.body() != null ? response.body().string() : "";
                         JSONArray followList = new JSONArray(responseBody);
+                        boolean isFollowed = false;
 
-                        // 使用 AtomicBoolean 替代 boolean 以便在 lambda 表达式中修改
-                        AtomicBoolean isFollowed = new AtomicBoolean(false);
-
-                        // 遍历关注的 geocache 列表
+                        // 遍历关注列表
                         for (int i = 0; i < followList.length(); i++) {
                             JSONObject followItem = followList.getJSONObject(i);
                             String followedGeocacheCode = followItem.getString("geocacheCode");
                             boolean followed = followItem.getBoolean("followed");
 
-                            // 判断该 geocache 是否已被关注
                             if (followedGeocacheCode.equals(geocacheCode) && followed) {
-                                isFollowed.set(true);  // 使用 AtomicBoolean 设置值
+                                isFollowed = true;
                                 break;
                             }
                         }
 
-                        // 更新 UI
-                        runOnUiThread(() -> {
-                            if (isFollowed.get()) {  // 获取 AtomicBoolean 的值
-                                btnFollow.setText("Unfollow");
-                            } else {
-                                btnFollow.setText("Follow");
-                            }
-                        });
-
+                        callback.onResult(isFollowed);
                     } catch (JSONException e) {
                         e.printStackTrace();
+                        callback.onResult(null);
                     }
                 } else {
-                    runOnUiThread(() -> {
-                        Toast.makeText(GeocacheDetailActivity.this, "操作失败", Toast.LENGTH_SHORT).show();
-                    });
+                    callback.onResult(null);
                 }
             }
         });
     }
 
-
-
-
-
+    interface FollowStatusCallback {
+        void onResult(Boolean isFollowed);
+    }
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
     }
-
-
-
 
     // 处理地图生命周期
     @Override
