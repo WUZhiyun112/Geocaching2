@@ -134,6 +134,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             uiSettings.setScrollGesturesEnabled(false); // 允许滑动
         }
 
+
         checkFollowStatus(geocache, isFollowed -> {
             if (isFollowed == null) {
                 // 如果获取关注状态失败，可以显示错误提示
@@ -144,7 +145,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                     btnFollow.setText("Followed");
                     btnFollow.setBackgroundColor(Color.GRAY); // Gray background
                     btnFollow.setTextColor(Color.WHITE); // White text
-                } else{
+                } else {
                     btnFollow.setText("Follow");
                     btnFollow.setBackgroundColor(Color.parseColor("#396034")); // Green background
                     btnFollow.setTextColor(Color.WHITE); // White text
@@ -360,6 +361,12 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                 if (response.isSuccessful()) {
                     try {
                         String responseBody = response.body() != null ? response.body().string() : "";
+                        if (responseBody.isEmpty()) {
+                            // 如果响应体为空，直接返回未关注状态
+                            callback.onResult(false);
+                            return;
+                        }
+
                         JSONArray followList = new JSONArray(responseBody);
                         boolean isFollowed = false;
 

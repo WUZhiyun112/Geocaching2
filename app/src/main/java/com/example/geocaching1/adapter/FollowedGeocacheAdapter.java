@@ -36,6 +36,9 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
     public void onBindViewHolder(@NonNull FollowedGeocacheViewHolder holder, int position) {
         Geocache geocache = geocacheList.get(position);
         holder.nameTextView.setText(geocache.getName());
+        holder.codeTextView.setText((geocache.getCode()));
+        holder.locationTextView.setText((geocache.getLocation()));
+        holder.typeTextView.setText((geocache.getType()));
         // 填充其他字段...
 
         // 点击事件
@@ -53,12 +56,15 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
     }
 
     public static class FollowedGeocacheViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView;
+        TextView nameTextView, codeTextView, typeTextView, locationTextView;
         // 其他视图组件
 
         public FollowedGeocacheViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameTextView = itemView.findViewById(R.id.geocache_code);
+            nameTextView = itemView.findViewById(R.id.geocache_name);
+            codeTextView = itemView.findViewById(R.id.geocache_code);
+            typeTextView = itemView.findViewById(R.id.geocache_type);
+            locationTextView = itemView.findViewById(R.id.geocache_location);
             // 初始化其他视图组件
         }
     }
