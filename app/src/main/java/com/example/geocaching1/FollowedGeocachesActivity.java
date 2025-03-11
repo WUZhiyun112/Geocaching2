@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class FollowedGeocachesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private FollowedGeocacheAdapter adapter;
@@ -43,23 +42,23 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
 
-        // Initialize the adapter
+        // 初始化适配器
         adapter = new FollowedGeocacheAdapter(followedGeocaches, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        // Get user info from SharedPreferences
+        // 获取用户信息
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         int userId = sharedPreferences.getInt("USER_ID", -1);
         String jwtToken = sharedPreferences.getString("JWT_TOKEN", null);
 
         if (userId == -1 || jwtToken == null) {
-            Toast.makeText(this, "Please log in first", Toast.LENGTH_SHORT).show();
-            finish(); // Close the activity
+            Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+            finish(); // 结束当前 Activity
             return;
         }
 
-        // Load followed geocaches
+        // 加载关注的 Geocache 数据
         loadFollowedGeocaches(userId, jwtToken);
     }
 
@@ -75,12 +74,12 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
                     followedGeocaches.clear();
                     for (int i = 0; i < response.length(); i++) {
                         try {
-                            JSONObject geocache = response.getJSONObject(i);
+                            JSONObject geocacheJson = response.getJSONObject(i);
                             followedGeocaches.add(new Geocache(
-                                    geocache.getString("geocacheCode"),
-                                    geocache.optString("geocacheName", "N/A"),
-                                    geocache.optString("geocacheType", "N/A"),
-                                    geocache.optString("location", "N/A")
+                                    geocacheJson.getString("geocacheCode"),
+                                    geocacheJson.optString("geocacheName", "N/A"),
+                                    geocacheJson.optString("geocacheType", "N/A"),
+                                    geocacheJson.optString("location", "N/A")
                             ));
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -90,7 +89,7 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
                 },
                 error -> {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error loading data", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "加载数据失败", Toast.LENGTH_SHORT).show();
                 }) {
             @Override
             public Map<String, String> getHeaders() {

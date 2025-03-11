@@ -2,6 +2,7 @@ package com.example.geocaching1.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,7 +68,25 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
             locationTextView = itemView.findViewById(R.id.geocache_location);
             // 初始化其他视图组件
         }
+
+        public void bind(Geocache geocache) {
+            nameTextView.setText(geocache.getName());
+            codeTextView.setText(geocache.getCode());
+            typeTextView.setText(geocache.getType());
+            locationTextView.setText(geocache.getLocation());
+
+            // 点击事件
+            itemView.setOnClickListener(v -> {
+                Log.d("FollowedGeocacheAdapter", "Geocache clicked: " + geocache.getName());
+                Context context = v.getContext();
+                Intent intent = new Intent(context, GeocacheDetailActivity.class);
+                intent.putExtra("geocache", geocache); // 传递 Geocache 对象
+                context.startActivity(intent);
+            });
+        }
     }
+
+
 
     public static class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         private List<Geocache> geocacheList;
@@ -109,8 +128,9 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
 
         @Override
         public int getItemCount() {
-            return geocacheList.size() + (hasMoreData ? 1 : 0); // 如果有更多数据，就添加加载视图
+            return geocacheList.size() + (hasMoreData ? 1 : 0); // 如果还有更多数据，就添加加载视图
         }
+
 
         public void updateData(List<Geocache> newGeocacheList, boolean isFirstPage) {
             if (isFirstPage) {
