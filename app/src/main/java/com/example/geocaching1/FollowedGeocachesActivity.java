@@ -24,7 +24,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FollowedGeocachesActivity extends AppCompatActivity {
 
@@ -51,7 +53,7 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
         // 获取 SharedPreferences 中保存的用户 ID
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         int userId = sharedPreferences.getInt("USER_ID", -1);  // 获取保存的 userId
-
+        String jwtToken = sharedPreferences.getString("JWT_TOKEN", null); // 获取保存的 JWT 令牌
         // 如果用户未登录，提示并关闭当前 Activity
         if (userId == -1) {
             Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
@@ -77,6 +79,16 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
         String url = "http://192.168.226.72:8080/api/follow/list?userId=" + userId;
         Log.d(TAG, "FollowedGeocachesActivity - API URL: " + url);
 
+        // 获取 JWT 令牌
+        SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String jwtToken = sharedPreferences.getString("JWT_TOKEN", null);
+
+        if (jwtToken == null) {
+            Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+            finish(); // 结束当前 Activity
+            return;
+        }
+
         RequestQueue queue = Volley.newRequestQueue(this);
 
         // 创建请求
@@ -96,11 +108,9 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
                             try {
                                 JSONObject geocache = response.getJSONObject(i);
                                 String geocacheCode = geocache.getString("geocacheCode");
-                                String userName = geocache.getJSONObject("user").getString("username");
-                                String difficulty = geocache.getString("difficulty");
 
                                 // 将获取的 geocache 数据添加到列表
-                                followedGeocaches.add(new Geocache(geocacheCode, userName, difficulty));
+                                followedGeocaches.add(new Geocache(geocacheCode,null,null));
                                 Log.d(TAG, "FollowedGeocachesActivity - Geocache added: " + geocacheCode);
 
                             } catch (JSONException e) {
@@ -119,9 +129,21 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
                         // 隐藏进度条并显示错误消息
                         progressBar.setVisibility(View.GONE);
                         Log.e(TAG, "FollowedGeocachesActivity - Error response: " + error.toString());
+                        if (error.networkResponse != null) {
+                            Log.e(TAG, "Status code: " + error.networkResponse.statusCode);
+                            Log.e(TAG, "Response data: " + new String(error.networkResponse.data));
+                        }
                         Toast.makeText(FollowedGeocachesActivity.this, "Error loading data", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                // 添加 Authorization 头
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + jwtToken);
+                return headers;
+            }
+        };
 
         // 将请求添加到队列
         queue.add(request);
