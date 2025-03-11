@@ -1,14 +1,10 @@
 package com.example.geocaching1;
 
-import static com.example.geocaching1.Geocache.DATE_FORMATTER;
-import static com.example.geocaching1.GeocacheFetcher.fetchGeocacheDetails;
-
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.widget.Button;
@@ -16,7 +12,6 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,7 +19,6 @@ import java.lang.ref.WeakReference;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -60,35 +54,25 @@ import android.widget.TextView;
 
 import com.amap.api.maps.CameraUpdate;
 import com.amap.api.maps.CameraUpdateFactory;
-import com.amap.api.maps.LocationSource;
-import com.amap.api.maps.UiSettings;
-import com.amap.api.maps.model.BitmapDescriptorFactory;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.model.LatLng;
-import com.amap.api.maps.model.Marker;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.services.core.LatLonPoint;
-import com.amap.api.services.core.PoiItem;
 import com.amap.api.services.geocoder.GeocodeAddress;
 import com.amap.api.services.geocoder.GeocodeQuery;
 import com.amap.api.services.geocoder.GeocodeResult;
-import com.amap.api.services.geocoder.GeocodeSearch;
 import com.amap.api.services.geocoder.RegeocodeAddress;
 import com.amap.api.services.geocoder.RegeocodeQuery;
 import com.amap.api.services.geocoder.RegeocodeResult;
-import com.amap.api.services.poisearch.PoiResult;
-import com.amap.api.services.poisearch.PoiSearch;
+import com.example.geocaching1.adapter.FollowedGeocacheAdapter;
 import com.example.geocaching1.databinding.ActivityMainBinding;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.math.BigDecimal;
-import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 
@@ -105,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     // 声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
 
-    private GeocacheAdapter geocacheAdapter;
+    private FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
     // 声明地图控制器
     private AMap aMap = null;
     // 声明地图定位监听
@@ -185,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 // Set the adapter
-        geocacheAdapter = new GeocacheAdapter(MainActivity.this, geocacheList);
+        geocacheAdapter = new FollowedGeocacheAdapter.GeocacheAdapter(MainActivity.this, geocacheList);
         recyclerView.setAdapter(geocacheAdapter);
 
 
@@ -563,9 +547,9 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     }
 
     private class FetchGeocacheDetailsTask extends AsyncTask<String, Void, Geocache> {
-        private GeocacheAdapter geocacheAdapter;
+        private FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
 
-        FetchGeocacheDetailsTask(GeocacheAdapter geocacheAdapter) {
+        FetchGeocacheDetailsTask(FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter) {
             this.geocacheAdapter = geocacheAdapter;
         }
 

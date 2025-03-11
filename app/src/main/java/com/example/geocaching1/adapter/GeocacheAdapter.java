@@ -1,4 +1,4 @@
-package com.example.geocaching1;
+package com.example.geocaching1.adapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -11,13 +11,18 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.geocaching1.Geocache;
+import com.example.geocaching1.GeocacheDetailActivity;
+import com.example.geocaching1.R;
+
 import java.util.List;
 
 public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private List<Geocache> geocacheList;
-    private Context context;
     private static final int VIEW_TYPE_ITEM = 0;
     private static final int VIEW_TYPE_LOADING = 1;
+
+    private List<Geocache> geocacheList;
+    private Context context;
     private boolean hasMoreData = true; // 是否还有更多数据可以加载
 
     public GeocacheAdapter(Context context, List<Geocache> geocacheList) {
@@ -52,7 +57,7 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        return geocacheList.size() + (hasMoreData ? 1 : 0);
+        return geocacheList.size() + (hasMoreData ? 1 : 0); // 如果有更多数据，就添加加载视图
     }
 
     public void updateData(List<Geocache> newGeocacheList, boolean isFirstPage) {
@@ -60,7 +65,12 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             geocacheList.clear(); // 只有第一页才清空
         }
         geocacheList.addAll(newGeocacheList);
-        notifyDataSetChanged();
+        notifyItemRangeInserted(geocacheList.size() - newGeocacheList.size(), newGeocacheList.size());
+    }
+
+    public void setHasMoreData(boolean hasMoreData) {
+        this.hasMoreData = hasMoreData;
+        notifyItemChanged(geocacheList.size() - 1); // 当数据加载完成时，更新加载视图
     }
 
     public static class GeocacheViewHolder extends RecyclerView.ViewHolder {
@@ -90,13 +100,29 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-
     public static class LoadingViewHolder extends RecyclerView.ViewHolder {
         ProgressBar progressBar;
 
         public LoadingViewHolder(@NonNull View itemView) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.progressBar);
+        }
+    }
+
+    // FollowedGeocacheAdapter 可以继承 GeocacheAdapter 来避免重复代码
+    public static class FollowedGeocacheAdapter extends GeocacheAdapter {
+        public FollowedGeocacheAdapter(Context context, List<Geocache> geocacheList) {
+            super(context, geocacheList);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+            super.onBindViewHolder(holder, position);
+
+            if (holder instanceof GeocacheViewHolder) {
+                // 在此处你可以为 FollowedGeocacheAdapter 做自定义的修改，若有需要
+                // 例如改变点击事件，或显示额外的字段
+            }
         }
     }
 }

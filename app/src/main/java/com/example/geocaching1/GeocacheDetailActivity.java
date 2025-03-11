@@ -32,7 +32,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -222,10 +224,17 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             return;
         }
 
-        String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
-        Log.d("ToggleFollow", "geocacheCode: " + geocacheCode);
+        final String geocacheCode = geocache.getCode();  // 将geocacheCode声明为final
+        final String[] geocacheName = {geocache.getName()};  // 将geocacheName声明为final
+        final String[] geocacheType = {geocache.getType()};  // 将geocacheType声明为final
+        final String[] location = {geocache.getLocation()};  // 将location声明为final
 
-        // 获取关注状态并执行相应操作
+        Log.d("ToggleFollow", "geocacheCode: " + geocacheCode);
+        Log.d("ToggleFollow", "geocacheName: " + geocacheName[0]);
+        Log.d("ToggleFollow", "geocacheType: " + geocacheType[0]);
+        Log.d("ToggleFollow", "location: " + location[0]);
+
+// 获取关注状态并执行相应操作
         checkFollowStatus(geocache, isFollowed -> {
             if (isFollowed == null) {
                 // 如果网络请求失败，标记操作完成
@@ -234,13 +243,20 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                 return;
             }
 
+            // 对 URL 中的特殊字符进行编码
+            try {
+                geocacheName[0] = URLEncoder.encode(geocacheName[0], "UTF-8");
+                geocacheType[0] = URLEncoder.encode(geocacheType[0], "UTF-8");
+                location[0] = URLEncoder.encode(location[0], "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
 
 
-
-            // 根据关注状态选择API URL
             String apiUrl = isFollowed ?
                     "http://192.168.226.72:8080/api/follow/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
-                    "http://192.168.226.72:8080/api/follow/add?userId=" + userId + "&geocacheCode=" + geocacheCode;
+                    "http://192.168.226.72:8080/api/follow/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
+                            "&geocacheName=" + geocacheName[0] + "&geocacheType=" + geocacheType[0] + "&location=" + location[0];
 
             // 创建 OkHttpClient 实例并发送请求
             OkHttpClient client = ApiClient.getUnsafeOkHttpClient();

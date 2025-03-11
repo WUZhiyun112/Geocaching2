@@ -21,6 +21,7 @@ public class Geocache implements Parcelable {
     private String description;  // 新增字段
     private String size;         // 新增字段
     private String difficulty;   // 新增字段
+    private String location;     // 新增字段
 
     // 日期格式
     public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -37,12 +38,34 @@ public class Geocache implements Parcelable {
         this.description = description;
         this.size = size;
         this.difficulty = difficulty;
+        this.location = latitude + "|" + longitude;  // 计算并设置location
     }
 
     public Geocache(String code, String name, String difficulty) {
         this.code = code;
         this.name = name;
         this.difficulty = difficulty;
+    }
+
+    // 新增构造函数，支持通过location构造
+    public Geocache(String code, String name, String location, String type) {
+        this.code = code;
+        this.name = name;
+        this.type = type;
+        this.location = location;
+
+        // 解析 location 获取 latitude 和 longitude
+        String[] locationParts = location.split("\\|");
+        if (locationParts.length == 2) {
+            try {
+                this.latitude = new BigDecimal(locationParts[0]);
+                this.longitude = new BigDecimal(locationParts[1]);
+            } catch (NumberFormatException e) {
+                Log.e("Geocache", "Location parsing error: " + e.getMessage());
+                this.latitude = BigDecimal.ZERO;
+                this.longitude = BigDecimal.ZERO;
+            }
+        }
     }
 
     // Parcelable implementation
@@ -67,6 +90,7 @@ public class Geocache implements Parcelable {
         description = in.readString();
         size = in.readString();
         difficulty = in.readString();
+        location = in.readString();  // 读取location
     }
 
     public static final Creator<Geocache> CREATOR = new Creator<Geocache>() {
@@ -102,6 +126,7 @@ public class Geocache implements Parcelable {
         dest.writeString(description);
         dest.writeString(size);
         dest.writeString(difficulty);
+        dest.writeString(location);  // 写入location
     }
 
     // Getters
@@ -146,10 +171,10 @@ public class Geocache implements Parcelable {
     }
 
     public String getLocation() {
-        return latitude + "|" + longitude;
+        return location;  // 返回 location
     }
+
     public String getGeocacheCode() {
         return code;
     }
-
 }

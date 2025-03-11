@@ -1,7 +1,6 @@
 package com.example.geocaching1;
 
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,23 +14,10 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.geocaching1.adapter.FollowedGeocacheAdapter;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
-import android.content.Intent;
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.Spinner;
-import android.widget.Toast;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.geocaching1.GeocacheAdapter;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +25,8 @@ import java.util.List;
 public class DashboardFragment extends Fragment {
 
     private RecyclerView recyclerView;
-    private GeocacheAdapter geocacheAdapter;
+    private FollowedGeocacheAdapter geocacheAdapter;
+
     private List<Geocache> geocacheList = new ArrayList<>();
     private List<Geocache> filteredGeocacheList = new ArrayList<>();  // 存储筛选后的数据
 
@@ -110,8 +97,10 @@ public class DashboardFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setHasFixedSize(true);  // 增强性能
 
-        geocacheAdapter = new GeocacheAdapter(requireContext(), filteredGeocacheList);
+
+        geocacheAdapter = new FollowedGeocacheAdapter(filteredGeocacheList, requireContext());
         recyclerView.setAdapter(geocacheAdapter);
+
     }
 
     /**
