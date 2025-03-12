@@ -48,32 +48,41 @@ public class Geocache implements Parcelable {
     }
 
     // 新增构造函数，支持通过location构造
-    public Geocache(String code, String name, String location, String type) {
+    public Geocache(String code, String name, String type, String location ) {
         this.code = code;
         this.name = name;
         this.type = type;
         this.location = location;
 
+        // 初始化 latitude 和 longitude
+        this.latitude = BigDecimal.ZERO;
+        this.longitude = BigDecimal.ZERO;
+
         // 解析 location 获取 latitude 和 longitude
-        String[] locationParts = location.split("\\|");
-        if (locationParts.length == 2) {
-            try {
-                this.latitude = new BigDecimal(locationParts[0]);
-                this.longitude = new BigDecimal(locationParts[1]);
-            } catch (NumberFormatException e) {
-                Log.e("Geocache", "Location parsing error: " + e.getMessage());
-                this.latitude = BigDecimal.ZERO;
-                this.longitude = BigDecimal.ZERO;
+        if (location != null && !location.isEmpty()) {
+            String[] locationParts = location.split("\\|");
+            if (locationParts.length == 2) {
+                try {
+                    this.latitude = new BigDecimal(locationParts[0]);
+                    this.longitude = new BigDecimal(locationParts[1]);
+                } catch (NumberFormatException e) {
+                    Log.e("Geocache", "Location parsing error: " + e.getMessage());
+                    // 保持默认值 BigDecimal.ZERO
+                }
             }
         }
     }
-
     // Parcelable implementation
     protected Geocache(Parcel in) {
         code = in.readString();
         name = in.readString();
-        latitude = new BigDecimal(in.readString());
-        longitude = new BigDecimal(in.readString());
+
+        // 处理 latitude 和 longitude 的空值
+        String latitudeStr = in.readString();
+        String longitudeStr = in.readString();
+        latitude = latitudeStr != null ? new BigDecimal(latitudeStr) : BigDecimal.ZERO;
+        longitude = longitudeStr != null ? new BigDecimal(longitudeStr) : BigDecimal.ZERO;
+
         status = in.readString();
         type = in.readString();
 
@@ -92,6 +101,23 @@ public class Geocache implements Parcelable {
         difficulty = in.readString();
         location = in.readString();  // 读取location
     }
+    @Override
+    public String toString() {
+        return "Geocache{" +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", status='" + status + '\'' +
+                ", type='" + type + '\'' +
+                ", foundAt=" + (foundAt != null ? DATE_FORMATTER.format(foundAt) : "null") +
+                ", description='" + description + '\'' +
+                ", size='" + size + '\'' +
+                ", difficulty='" + difficulty + '\'' +
+                ", location='" + location + '\'' +
+                '}';
+    }
+
 
     public static final Creator<Geocache> CREATOR = new Creator<Geocache>() {
         @Override
@@ -114,8 +140,8 @@ public class Geocache implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(code);
         dest.writeString(name);
-        dest.writeString(latitude.toString());
-        dest.writeString(longitude.toString());
+        dest.writeString(latitude != null ? latitude.toString() : "0");
+        dest.writeString(longitude != null ? longitude.toString() : "0");
         dest.writeString(status);
         dest.writeString(type);
 
@@ -177,4 +203,6 @@ public class Geocache implements Parcelable {
     public String getGeocacheCode() {
         return code;
     }
+
+
 }

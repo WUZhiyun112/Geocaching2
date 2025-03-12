@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.geocaching1.Geocache;
 import com.example.geocaching1.GeocacheDetailActivity;
 import com.example.geocaching1.R;
+import com.example.geocaching1.SimpleDetailActivity;
 
 import java.util.List;
 public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocacheAdapter.FollowedGeocacheViewHolder> {
@@ -42,11 +43,24 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
         holder.typeTextView.setText((geocache.getType()));
         // 填充其他字段...
 
-        // 点击事件
+
         holder.itemView.setOnClickListener(v -> {
-            // 跳转到详情页面
-            Intent intent = new Intent(context, GeocacheDetailActivity.class);
+            if (geocache == null) {
+                Log.e("FollowedGeocacheAdapter1111", "Geocache is null");
+                return;
+            }
+            Log.d("FollowedGeocacheAdapter", "Clicked Geocache: " + geocache.getName() + " | Code: " + geocache.getCode());
+            Log.d("FollowedGeocacheAdapter1111", "Clicked Geocache: " + geocache.toString());
+            Log.d("FollowedGeocacheAdapter1111", "点击的 Geocache: " + geocache.getName());
+            Context context = v.getContext();
+            if (context == null) {
+                Log.e("FollowedGeocacheAdapter1111", "Context is null");
+                return;
+            }
+            Log.d("FollowedGeocacheAdapter1111", "Context is valid: " + context.getClass().getSimpleName());
+            Intent intent = new Intent(context, SimpleDetailActivity.class);
             intent.putExtra("geocache", geocache); // 传递 Geocache 对象
+            Log.d("FollowedGeocacheAdapte1111r", "Starting GeocacheDetailActivity");
             context.startActivity(intent);
         });
     }
@@ -77,10 +91,21 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
 
             // 点击事件
             itemView.setOnClickListener(v -> {
+                if (geocache == null) {
+                    Log.e("FollowedGeocacheAdapter", "Geocache is null");
+                    return;
+                }
                 Log.d("FollowedGeocacheAdapter", "Geocache clicked: " + geocache.getName());
+                Log.d("FollowedGeocacheAdapter222", "Clicked Geocache: " + geocache.toString());
                 Context context = v.getContext();
+                if (context == null) {
+                    Log.e("FollowedGeocacheAdapter", "Context is null");
+                    return;
+                }
+                Log.d("FollowedGeocacheAdapter", "Context is valid: " + context.getClass().getSimpleName());
                 Intent intent = new Intent(context, GeocacheDetailActivity.class);
                 intent.putExtra("geocache", geocache); // 传递 Geocache 对象
+                Log.d("FollowedGeocacheAdapter", "Starting GeocacheDetailActivity");
                 context.startActivity(intent);
             });
         }
@@ -165,7 +190,8 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
                 // 点击事件，跳转到详情页
                 itemView.setOnClickListener(v -> {
                     Context context = v.getContext();
-                    Intent intent = new Intent(context, GeocacheDetailActivity.class);
+                    Log.d("FollowedGeocacheAdapter333", "Clicked Geocache: " + geocache.toString());
+                    Intent intent = new Intent(context,GeocacheDetailActivity.class);
                     intent.putExtra("geocache", geocache); // 传递数据
                     context.startActivity(intent);
                 });

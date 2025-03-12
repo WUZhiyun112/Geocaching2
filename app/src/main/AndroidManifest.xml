@@ -49,6 +49,9 @@
             android:name=".GeocacheDetailActivity"
             android:exported="false" />
         <activity
+            android:name=".SimpleDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".LoginActivity"
             android:exported="false" />
         <activity
