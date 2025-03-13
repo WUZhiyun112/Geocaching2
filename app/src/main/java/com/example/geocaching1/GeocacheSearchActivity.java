@@ -78,7 +78,9 @@ public class GeocacheSearchActivity extends AppCompatActivity {
                                     obj.getString("geocacheCode"),
                                     obj.getString("geocacheName"),
                                     obj.getString("geocacheType"),
-                                    obj.getString("location")
+                                    obj.getString("location"),
+                                    obj.isNull("foundAt") ? "N/A" : obj.getString("foundAt"), // 处理 foundAt 为 null 的情况
+                                    obj.getString("status")
                             );
 
                             String status = obj.getString("status");

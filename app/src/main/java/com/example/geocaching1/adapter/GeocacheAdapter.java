@@ -39,10 +39,10 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(context).inflate(R.layout.geocache_item, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_search, parent, false);
             return new GeocacheViewHolder(view);
         } else {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_loading, parent, false);
+            View view = LayoutInflater.from(context).inflate(R.layout.item_search, parent, false);
             return new LoadingViewHolder(view);
         }
     }
@@ -74,21 +74,25 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public static class GeocacheViewHolder extends RecyclerView.ViewHolder {
-        TextView nameTextView, typeTextView, statusTextView, locationTextView;
+        TextView tvGeocacheCode, tvGeocacheName, tvGeocacheType, tvLocation, tvFoundAt, tvStatus;
 
         public GeocacheViewHolder(@NonNull View itemView) {
             super(itemView);
-            nameTextView = itemView.findViewById(R.id.nameTextView);
-            typeTextView = itemView.findViewById(R.id.typeTextView);
-            statusTextView = itemView.findViewById(R.id.statusTextView);
-            locationTextView = itemView.findViewById(R.id.locationTextView);
+            tvGeocacheCode = itemView.findViewById(R.id.tvGeocacheCode);
+            tvGeocacheName = itemView.findViewById(R.id.tvGeocacheName);
+            tvGeocacheType = itemView.findViewById(R.id.tvGeocacheType);
+            tvLocation = itemView.findViewById(R.id.tvLocation);
+            tvFoundAt = itemView.findViewById(R.id.tvFoundAt);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
         }
 
         public void bind(Geocache geocache) {
-            nameTextView.setText(geocache.getName());
-            typeTextView.setText(geocache.getType());
-            statusTextView.setText(geocache.getStatus());
-            locationTextView.setText(geocache.getLocation());
+            tvGeocacheCode.setText("Geocache Code: " + geocache.getCode());
+            tvGeocacheName.setText(geocache.getName());
+            tvGeocacheType.setText("Type: " + geocache.getType());
+            tvLocation.setText("Location: " + geocache.getLocation());
+            tvFoundAt.setText("Found At: " + (geocache.getFoundAt() != null ? geocache.getFoundAt() : "N/A"));
+            tvStatus.setText("Status: " + geocache.getStatus());
 
             // 点击事件，跳转到详情页
             itemView.setOnClickListener(v -> {

@@ -73,6 +73,42 @@ public class Geocache implements Parcelable {
         }
     }
 
+    public Geocache(String code, String name, String type, String location, String foundAt, String status) {
+        this.code = code;
+        this.name = name;
+        this.type = type;
+        this.location = location;
+        this.status = status;
+
+        // 解析 location 获取 latitude 和 longitude
+        if (location != null && !location.isEmpty()) {
+            String[] locationParts = location.split("\\|");
+            if (locationParts.length == 2) {
+                try {
+                    this.latitude = new BigDecimal(locationParts[0]);
+                    this.longitude = new BigDecimal(locationParts[1]);
+                } catch (NumberFormatException e) {
+                    Log.e("Geocache", "Location parsing error: " + e.getMessage());
+                    // 保持默认值 BigDecimal.ZERO
+                    this.latitude = BigDecimal.ZERO;
+                    this.longitude = BigDecimal.ZERO;
+                }
+            }
+        }
+
+        // 解析 foundAt 时间
+        if (foundAt != null && !foundAt.equals("N/A")) {
+            try {
+                this.foundAt = DATE_FORMATTER.parse(foundAt);
+            } catch (ParseException e) {
+                Log.e("Geocache", "Date parsing error: " + e.getMessage());
+                this.foundAt = null;
+            }
+        } else {
+            this.foundAt = null;
+        }
+    }
+
 
 
     // Parcelable implementation
