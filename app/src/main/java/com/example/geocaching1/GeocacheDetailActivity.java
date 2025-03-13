@@ -1,5 +1,6 @@
 package com.example.geocaching1;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -35,6 +36,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -48,7 +50,7 @@ import okhttp3.Response;
 
 public class GeocacheDetailActivity extends AppCompatActivity {
 
-    private TextView tvName, tvType, tvLocation, tvDescription, tvDifficulty, tvSize, tvStatus, tvDescriptionTitle;
+    private TextView tvName, tvType, tvLocation, tvDescription, tvDifficulty, tvSize, tvStatus, tvDescriptionTitle, tvFoundStatus;
     private MapView mapView;
     private AMap aMap;
     private BigDecimal latitude, longitude;
@@ -87,7 +89,41 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             toggleFollow(geocache);  // 调用 toggleFollow 方法
         });
 
+        TextView tvChangeFoundStatus = findViewById(R.id.tv_change_found_status);
+        TextView tvFoundStatus = findViewById(R.id.tv_found_status);
 
+        tvChangeFoundStatus.setOnClickListener(v -> {
+            // 获取 SharedPreferences
+            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+
+            // 状态选项
+            String[] options = {"Haven’t started", "Found it", "Searched but not found"};
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Update Your Search Status")
+                    .setItems(options, (dialog, which) -> {
+                        String selectedStatus = options[which];
+
+                        // 如果用户选择了 "Haven’t started"，直接 return，不做任何操作
+                        if ("Haven’t started".equals(selectedStatus)) {
+                            return;
+                        }
+
+                        // 更新 UI
+                        tvFoundStatus.setText("My Progress: " + selectedStatus);
+
+                        // 调用 API 更新状态
+                        updateSearchStatus(selectedStatus);
+
+                        // 保存状态已更新
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putBoolean("STATUS_UPDATED", true);
+                        editor.apply();
+                    })
+                    .show();
+        });
+
+        getFoundStatus();
         // 显示 Geocache 的详细信息
         if (geocache != null) {
             tvName.setText(geocache.getName());
@@ -189,6 +225,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             tvLocation.setText(locationText);
         }
     }
+
 
     private void saveFollowStatus(String geocacheCode, boolean isFollowed) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -397,6 +434,160 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     interface FollowStatusCallback {
         void onResult(Boolean isFollowed);
     }
+    private void updateSearchStatus(String status) {
+        // 获取用户信息
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);  // 假设用户 ID 存储在 SharedPreferences 中
+        String token = prefs.getString("JWT_TOKEN", "");
+
+        // 假设 geocacheCode、geocacheName、geocacheType 和 location 是传递给此活动的对象
+        Geocache geocache = getIntent().getParcelableExtra("geocache");
+        String geocacheCode = geocache.getCode();  // 获取 geocache 的代码
+        String geocacheName = geocache.getName();  // 获取 geocache 的名字
+        String geocacheType = geocache.getType();  // 获取 geocache 类型
+        String location = geocache.getLocation();  // 获取地理位置
+
+        try {
+            // 对可能包含特殊字符的字段进行 URL 编码
+            String encodedLocation = URLEncoder.encode(location, StandardCharsets.UTF_8.toString());
+            String encodedGeocacheName = URLEncoder.encode(geocacheName, StandardCharsets.UTF_8.toString());
+            String encodedGeocacheType = URLEncoder.encode(geocacheType, StandardCharsets.UTF_8.toString());
+            String encodedStatus = URLEncoder.encode(status, StandardCharsets.UTF_8.toString());
+
+            // 构造请求 URL
+            String apiUrl = "http://192.168.226.72:8080/api/foundstatus/set";
+
+            // 创建 POST 请求的请求体
+            String requestBody = "userId=" + userId +
+                    "&geocacheCode=" + geocacheCode +
+                    "&geocacheName=" + encodedGeocacheName +
+                    "&geocacheType=" + encodedGeocacheType +
+                    "&location=" + encodedLocation +
+                    "&myStatus=" + encodedStatus;
+
+            // 创建 OkHttp 请求
+            OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
+
+            Request request = new Request.Builder()
+                    .url(apiUrl)
+                    .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
+                    .post(RequestBody.create(requestBody, MediaType.get("application/x-www-form-urlencoded")))  // 使用 POST 请求发送表单数据
+                    .build();
+
+            // 发起请求
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
+                    });
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    if (response.isSuccessful()) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(GeocacheDetailActivity.this, "状态更新成功", Toast.LENGTH_SHORT).show();
+                        });
+                    } else {
+                        runOnUiThread(() -> {
+                            Toast.makeText(GeocacheDetailActivity.this, "状态更新失败，请重试", Toast.LENGTH_SHORT).show();
+                        });
+                    }
+                }
+            });
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+            runOnUiThread(() -> {
+                Toast.makeText(GeocacheDetailActivity.this, "编码错误，请重试", Toast.LENGTH_SHORT).show();
+            });
+        }
+    }
+
+    private void getFoundStatus() {
+        // 获取用户信息
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);  // 假设用户 ID 存储在 SharedPreferences 中
+        String token = prefs.getString("JWT_TOKEN", "");
+
+        // 获取 geocacheCode（假设是通过 Intent 传递的）
+        Geocache geocache = getIntent().getParcelableExtra("geocache");
+        String geocacheCode = geocache.getCode();
+
+        // 构造请求 URL
+        String apiUrl = "http://192.168.226.72:8080/api/foundstatus/list?userId=" + userId;
+
+        // 创建 OkHttp 请求
+        OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
+
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
+                .get()  // 使用 GET 请求
+                .build();
+
+        // 发起请求
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> {
+                    Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
+                    updateStatusText("Haven't Found");
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+
+                    // 如果响应为空，直接更新 UI
+                    if (responseBody == null || responseBody.trim().isEmpty()) {
+                        Log.w("GeocacheDetail", "Empty response, setting status to Haven't Found");
+                        runOnUiThread(() -> updateStatusText("Haven't Found"));
+                        return;
+                    }
+
+                    try {
+                        JSONArray jsonResponse = new JSONArray(responseBody);
+
+                        String foundStatus = "Haven't Found";  // 默认状态
+
+                        for (int i = 0; i < jsonResponse.length(); i++) {
+                            JSONObject statusObj = jsonResponse.getJSONObject(i);
+                            String code = statusObj.getString("geocacheCode");
+                            int user = statusObj.getJSONObject("user").getInt("userId");
+                            String status = statusObj.getString("status");
+
+                            if (code.equals(geocacheCode) && user == userId) {
+                                foundStatus = status;
+                                Log.d("GeocacheDetail", "Match found! Status: " + foundStatus);
+                                break;
+                            }
+                        }
+
+                        String finalFoundStatus = foundStatus;
+                        runOnUiThread(() -> updateStatusText(finalFoundStatus));
+
+                    } catch (JSONException e) {
+                        runOnUiThread(() -> updateStatusText("Haven't Found"));
+                    }
+                } else {
+                    Log.w("GeocacheDetail", "Request failed, response code: " + response.code());
+                    runOnUiThread(() -> updateStatusText("Haven't Found"));
+                }
+            }
+
+        });
+    }
+
+    private void updateStatusText(String status) {
+        TextView statusTextView = findViewById(R.id.tv_found_status);
+        Log.d("GeocacheDetail", "Updating status text: " + status);
+        statusTextView.setText("My Progress: " + status);
+    }
+
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
