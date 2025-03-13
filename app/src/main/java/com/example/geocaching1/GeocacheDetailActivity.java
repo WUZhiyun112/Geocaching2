@@ -38,7 +38,14 @@ import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import okhttp3.Call;
@@ -438,15 +445,15 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     private void updateSearchStatus(String status) {
         // 获取用户信息
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        int userId = prefs.getInt("USER_ID", -1);  // 假设用户 ID 存储在 SharedPreferences 中
+        int userId = prefs.getInt("USER_ID", -1);
         String token = prefs.getString("JWT_TOKEN", "");
 
         // 获取 geocache 相关信息
         Geocache geocache = getIntent().getParcelableExtra("geocache");
-        String geocacheCode = geocache.getCode();  // 获取 geocache 代码
-        String geocacheName = geocache.getName();  // 获取 geocache 名字
-        String geocacheType = geocache.getType();  // 获取 geocache 类型
-        String location = geocache.getLocation();  // 获取地理位置
+        String geocacheCode = geocache.getCode();
+        String geocacheName = geocache.getName();
+        String geocacheType = geocache.getType();
+        String location = geocache.getLocation();
 
         try {
             // 对可能包含特殊字符的字段进行 URL 编码
@@ -454,6 +461,19 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             String encodedGeocacheName = URLEncoder.encode(geocacheName, StandardCharsets.UTF_8.toString());
             String encodedGeocacheType = URLEncoder.encode(geocacheType, StandardCharsets.UTF_8.toString());
             String encodedStatus = URLEncoder.encode(status, StandardCharsets.UTF_8.toString());
+
+            // 仅在用户选择 "Found it" 时记录找到时间
+            String foundAtParam = "";
+            if ("Found it".equals(status)) {
+                // 获取当前时间，使用 Calendar 获取
+                Calendar calendar = Calendar.getInstance();
+                long currentTimeMillis = calendar.getTimeInMillis();  // 获取当前时间的毫秒值
+
+                // 转换为标准的时间字符串（比如：2025-03-13T15:30:00）
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                String formattedFoundAt = URLEncoder.encode(sdf.format(new Date(currentTimeMillis)), StandardCharsets.UTF_8.toString());
+                foundAtParam = "&foundAt=" + formattedFoundAt;
+            }
 
             // 构造请求 URL
             String apiUrl = "http://192.168.226.72:8080/api/foundstatus/set";
@@ -464,15 +484,16 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                     "&geocacheName=" + encodedGeocacheName +
                     "&geocacheType=" + encodedGeocacheType +
                     "&location=" + encodedLocation +
-                    "&myStatus=" + encodedStatus;
+                    "&myStatus=" + encodedStatus +
+                    foundAtParam;  // 只有 "Found it" 时才会添加这个参数
 
             // 创建 OkHttp 请求
             OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
 
             Request request = new Request.Builder()
                     .url(apiUrl)
-                    .header("Authorization", "Bearer " + token)  // 在请求头中加入 Authorization
-                    .post(RequestBody.create(requestBody, MediaType.get("application/x-www-form-urlencoded")))  // 使用 POST 请求发送表单数据
+                    .header("Authorization", "Bearer " + token)  // 加入 Authorization 头
+                    .post(RequestBody.create(requestBody, MediaType.get("application/x-www-form-urlencoded")))
                     .build();
 
             // 发起请求
@@ -494,7 +515,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                             TextView tvFoundStatus = findViewById(R.id.tv_found_status);
                             tvFoundStatus.setText("My Progress: " + status);
 
-                            // **如果状态是 "Found it" 或 "Searched but not found"，立即隐藏 change 按钮**
+                            // 如果状态是 "Found it" 或 "Searched but not found"，立即隐藏 change 按钮
                             if ("Found it".equals(status) || "Searched but not found".equals(status)) {
                                 findViewById(R.id.tv_change_found_status).setVisibility(View.GONE);
                             }
@@ -513,6 +534,9 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             });
         }
     }
+
+
+
 
 
     private void getFoundStatus() {
