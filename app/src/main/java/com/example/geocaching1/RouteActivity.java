@@ -148,6 +148,7 @@ public class RouteActivity extends AppCompatActivity implements
             e.printStackTrace();
         }
         routeSearch.setRouteSearchListener(this);
+
     }
 
     /**

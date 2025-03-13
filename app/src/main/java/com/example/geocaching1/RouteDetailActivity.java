@@ -79,7 +79,7 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void busDetail(Intent intent) {
-        binding.toolbar.setTitle("公交路线规划");
+        binding.toolbar.setTitle("Public Transport Route Planning");
         BusPath busPath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) busPath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) busPath.getDistance());
@@ -132,7 +132,7 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void driveDetail(Intent intent) {
-        binding.toolbar.setTitle("驾车路线规划");
+        binding.toolbar.setTitle("Driving Route Planning");
         DrivePath drivePath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) drivePath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) drivePath.getDistance());
@@ -146,7 +146,7 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void rideDetail(Intent intent) {
-        binding.toolbar.setTitle("骑行路线规划");
+        binding.toolbar.setTitle("Cycling Route Planning");
         RidePath ridePath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) ridePath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) ridePath.getDistance());
@@ -160,7 +160,7 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void walkDetail(Intent intent) {
-        binding.toolbar.setTitle("步行路线规划");
+        binding.toolbar.setTitle("Walking Route Planning");
         WalkPath walkPath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) walkPath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) walkPath.getDistance());

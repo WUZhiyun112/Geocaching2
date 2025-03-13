@@ -96,18 +96,19 @@ public class MapUtil {
         return R.drawable.dir13;
     }
 
-    public static String getFriendlyTime(int second) {
-        if (second > 3600) {
-            int hour = second / 3600;
-            int miniate = (second % 3600) / 60;
-            return hour + "小时" + miniate + "分钟";
+    public static String getFriendlyTime(int seconds) {
+        if (seconds >= 3600) {
+            int hours = seconds / 3600;
+            int minutes = (seconds % 3600) / 60;
+            return hours + (hours == 1 ? " hour " : " hours ") + minutes + (minutes == 1 ? " minute" : " minutes");
         }
-        if (second >= 60) {
-            int miniate = second / 60;
-            return miniate + "分钟";
+        if (seconds >= 60) {
+            int minutes = seconds / 60;
+            return minutes + (minutes == 1 ? " minute" : " minutes");
         }
-        return second + "秒";
+        return seconds + (seconds == 1 ? " second" : " seconds");
     }
+
 
     public static String getFriendlyLength(int lenMeter) {
         if (lenMeter > 10000) // 10 km
