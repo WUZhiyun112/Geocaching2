@@ -61,6 +61,9 @@
             android:name=".FollowedGeocachesActivity"
             android:exported="false" />
         <activity
+            android:name=".GeocacheSearchActivity"
+            android:exported="false" />
+        <activity
             android:name=".EnterActivity"
             android:exported="true">
             <intent-filter>

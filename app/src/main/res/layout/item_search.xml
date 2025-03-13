@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="4dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvGeocacheCode"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Geocache Code: OC1842A"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvGeocacheName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Taoranting Park"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvGeocacheType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Type: Virtual"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Location: 39.8727|116.378633"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvFoundAt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Found At: 2025-03-13T18:07:56"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Status: Found it"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

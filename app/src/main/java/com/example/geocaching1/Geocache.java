@@ -72,6 +72,9 @@ public class Geocache implements Parcelable {
             }
         }
     }
+
+
+
     // Parcelable implementation
     protected Geocache(Parcel in) {
         code = in.readString();

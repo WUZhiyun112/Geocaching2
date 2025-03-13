@@ -11,12 +11,15 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.geocaching1.fragment.FoundGeocachesFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 public class SelfActivity extends AppCompatActivity {
 
     private TextView usernameTextView;
     private TextView emailTextView;
+    private int userId;  // 成员变量
+    private String jwtToken;  // 成员变量
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +29,8 @@ public class SelfActivity extends AppCompatActivity {
         usernameTextView = findViewById(R.id.usernameTextView);
         emailTextView = findViewById(R.id.emailTextView);
 
+
+
         updateUIFromPreferences();
 
         findViewById(R.id.follows_item).setOnClickListener(v -> {
@@ -33,9 +38,23 @@ public class SelfActivity extends AppCompatActivity {
             startActivity(intent);
         });
         // 设置点击事件
+// 在点击时创建 Fragment
         findViewById(R.id.finds_item).setOnClickListener(v -> {
-//            startActivity(new Intent(SelfActivity.this, FindsActivity.class));
+            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            int userId = sharedPreferences.getInt("USER_ID", -1);
+            String jwtToken = sharedPreferences.getString("JWT_TOKEN", null);
+
+            if (userId == -1 || jwtToken == null) {
+                Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+                finish(); // 结束当前 Activity
+                return;
+            }
+            Log.d("GeocacheSearchActivity123", "JWT Token: " + jwtToken);
+            // Start GeocacheSearchActivity when "Finds" is clicked
+            Intent intent = new Intent(SelfActivity.this, GeocacheSearchActivity.class);
+            startActivity(intent);
         });
+
 
         findViewById(R.id.settings_item).setOnClickListener(v -> {
 //            startActivity(new Intent(SelfActivity.this, SettingsActivity.class));
@@ -58,6 +77,8 @@ public class SelfActivity extends AppCompatActivity {
         String username = prefs.getString("USERNAME", "N/A");
         String email = prefs.getString("EMAIL", "N/A");
         int userId = prefs.getInt("USER_ID", -1);  // 获取 userId，如果没有存储则默认为 -1
+        String jwtToken = prefs.getString("JWT_TOKEN", "");
+
 
         // 打印调试信息
         Log.d("SelfActivity", "UserId: " + userId);
