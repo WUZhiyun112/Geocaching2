@@ -12,6 +12,7 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -440,10 +441,10 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         int userId = prefs.getInt("USER_ID", -1);  // 假设用户 ID 存储在 SharedPreferences 中
         String token = prefs.getString("JWT_TOKEN", "");
 
-        // 假设 geocacheCode、geocacheName、geocacheType 和 location 是传递给此活动的对象
+        // 获取 geocache 相关信息
         Geocache geocache = getIntent().getParcelableExtra("geocache");
-        String geocacheCode = geocache.getCode();  // 获取 geocache 的代码
-        String geocacheName = geocache.getName();  // 获取 geocache 的名字
+        String geocacheCode = geocache.getCode();  // 获取 geocache 代码
+        String geocacheName = geocache.getName();  // 获取 geocache 名字
         String geocacheType = geocache.getType();  // 获取 geocache 类型
         String location = geocache.getLocation();  // 获取地理位置
 
@@ -488,6 +489,15 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         runOnUiThread(() -> {
                             Toast.makeText(GeocacheDetailActivity.this, "状态更新成功", Toast.LENGTH_SHORT).show();
+
+                            // 更新 UI 上的 "My Progress" 状态
+                            TextView tvFoundStatus = findViewById(R.id.tv_found_status);
+                            tvFoundStatus.setText("My Progress: " + status);
+
+                            // **如果状态是 "Found it" 或 "Searched but not found"，立即隐藏 change 按钮**
+                            if ("Found it".equals(status) || "Searched but not found".equals(status)) {
+                                findViewById(R.id.tv_change_found_status).setVisibility(View.GONE);
+                            }
                         });
                     } else {
                         runOnUiThread(() -> {
@@ -503,6 +513,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             });
         }
     }
+
 
     private void getFoundStatus() {
         // 获取用户信息
@@ -532,27 +543,24 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             public void onFailure(Call call, IOException e) {
                 runOnUiThread(() -> {
                     Toast.makeText(GeocacheDetailActivity.this, "网络错误，请重试！", Toast.LENGTH_SHORT).show();
-                    updateStatusText("Haven't Found");
+                    updateStatusText("Haven't Started");
                 });
             }
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
-
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
 
-                    // 如果响应为空，直接更新 UI
                     if (responseBody == null || responseBody.trim().isEmpty()) {
-                        Log.w("GeocacheDetail", "Empty response, setting status to Haven't Found");
-                        runOnUiThread(() -> updateStatusText("Haven't Found"));
+                        runOnUiThread(() -> updateStatusText("Haven't Started"));
                         return;
                     }
 
                     try {
                         JSONArray jsonResponse = new JSONArray(responseBody);
-
-                        String foundStatus = "Haven't Found";  // 默认状态
+                        String foundStatus = "Haven't Started";  // 默认状态
+                        boolean shouldDisableChangeButton = false;
 
                         for (int i = 0; i < jsonResponse.length(); i++) {
                             JSONObject statusObj = jsonResponse.getJSONObject(i);
@@ -563,24 +571,37 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                             if (code.equals(geocacheCode) && user == userId) {
                                 foundStatus = status;
                                 Log.d("GeocacheDetail", "Match found! Status: " + foundStatus);
+
+                                // 如果状态是 "Found it" 或 "Searched but not found"，禁止修改
+                                if ("Found it".equals(foundStatus) || "Searched but not found".equals(foundStatus)) {
+                                    shouldDisableChangeButton = true;
+                                }
                                 break;
                             }
                         }
 
+                        boolean finalShouldDisableChangeButton = shouldDisableChangeButton;
                         String finalFoundStatus = foundStatus;
-                        runOnUiThread(() -> updateStatusText(finalFoundStatus));
+
+                        runOnUiThread(() -> {
+                            updateStatusText(finalFoundStatus);
+
+                            // 如果需要隐藏按钮
+                            if (finalShouldDisableChangeButton) {
+                                findViewById(R.id.tv_change_found_status).setVisibility(View.GONE);
+                            }
+                        });
 
                     } catch (JSONException e) {
-                        runOnUiThread(() -> updateStatusText("Haven't Found"));
+                        runOnUiThread(() -> updateStatusText("Haven't Started"));
                     }
                 } else {
-                    Log.w("GeocacheDetail", "Request failed, response code: " + response.code());
-                    runOnUiThread(() -> updateStatusText("Haven't Found"));
+                    runOnUiThread(() -> updateStatusText("Haven't Started"));
                 }
             }
-
         });
     }
+
 
     private void updateStatusText(String status) {
         TextView statusTextView = findViewById(R.id.tv_found_status);
