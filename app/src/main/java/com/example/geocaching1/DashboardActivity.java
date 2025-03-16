@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.geocaching1.Geocache;
 import com.example.geocaching1.R;
-import com.example.geocaching1.adapter.FollowedGeocacheAdapter;
+import com.example.geocaching1.adapter.MarkedGeocacheAdapter;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
 public class DashboardActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
+    private MarkedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
     private List<Geocache> geocacheList = new ArrayList<>();
     private List<Geocache> filteredGeocacheList = new ArrayList<>();  // 存储筛选后的数据
 
@@ -114,7 +114,7 @@ public class DashboardActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
         // 初始化适配器
-        geocacheAdapter = new FollowedGeocacheAdapter.GeocacheAdapter(DashboardActivity.this, filteredGeocacheList);
+        geocacheAdapter = new MarkedGeocacheAdapter.GeocacheAdapter(DashboardActivity.this, filteredGeocacheList);
         recyclerView.setAdapter(geocacheAdapter);
 
         // 添加滚动监听器

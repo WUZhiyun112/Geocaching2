@@ -64,7 +64,7 @@ import com.amap.api.services.geocoder.GeocodeResult;
 import com.amap.api.services.geocoder.RegeocodeAddress;
 import com.amap.api.services.geocoder.RegeocodeQuery;
 import com.amap.api.services.geocoder.RegeocodeResult;
-import com.example.geocaching1.adapter.FollowedGeocacheAdapter;
+import com.example.geocaching1.adapter.MarkedGeocacheAdapter;
 import com.example.geocaching1.databinding.ActivityMainBinding;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     // 声明AMapLocationClientOption对象
     public AMapLocationClientOption mLocationOption = null;
 
-    private FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
+    private MarkedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
     // 声明地图控制器
     private AMap aMap = null;
     // 声明地图定位监听
@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
 // Set the adapter
-        geocacheAdapter = new FollowedGeocacheAdapter.GeocacheAdapter(MainActivity.this, geocacheList);
+        geocacheAdapter = new MarkedGeocacheAdapter.GeocacheAdapter(MainActivity.this, geocacheList);
         recyclerView.setAdapter(geocacheAdapter);
 
 
@@ -547,9 +547,9 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
     }
 
     private class FetchGeocacheDetailsTask extends AsyncTask<String, Void, Geocache> {
-        private FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
+        private MarkedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
 
-        FetchGeocacheDetailsTask(FollowedGeocacheAdapter.GeocacheAdapter geocacheAdapter) {
+        FetchGeocacheDetailsTask(MarkedGeocacheAdapter.GeocacheAdapter geocacheAdapter) {
             this.geocacheAdapter = geocacheAdapter;
         }
 

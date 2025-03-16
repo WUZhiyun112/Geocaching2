@@ -39,7 +39,7 @@ import com.google.android.material.button.MaterialButton;  // Import MaterialBut
 public class LoginActivity extends AppCompatActivity {
 
 //    private static final String LOGIN_URL = "http://10.0.2.2:8080/api/users/login";  // 你的后端登录接口
-private static final String LOGIN_URL = "http://192.168.226.72:8080/api/users/login";
+private static final String LOGIN_URL = "http://192.168.70.72:8080/api/users/login";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     @Override

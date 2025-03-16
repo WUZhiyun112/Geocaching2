@@ -64,7 +64,7 @@ public class GeocacheSearchActivity extends AppCompatActivity {
     }
 
     private void loadGeocachesFromAPI() {
-        String url = "http://192.168.226.72:8080/api/foundstatus/list?userId=" + userId;
+        String url = "http://192.168.70.72:8080/api/foundstatus/list?userId=" + userId;
         RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,

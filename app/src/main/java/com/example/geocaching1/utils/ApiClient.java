@@ -46,8 +46,8 @@ public class ApiClient {
 
             builder.followRedirects(false);    // 禁用HTTP重定向
             builder.followSslRedirects(false); // 禁用SSL重定向
-//            builder.followRedirects(true);    // 允许 HTTP 重定向
-//            builder.followSslRedirects(true);
+//            builder.markRedirects(true);    // 允许 HTTP 重定向
+//            builder.markSslRedirects(true);
 
             return builder.build();
         } catch (Exception e) {

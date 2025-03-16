@@ -113,9 +113,9 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    // FollowedGeocacheAdapter 可以继承 GeocacheAdapter 来避免重复代码
-    public static class FollowedGeocacheAdapter extends GeocacheAdapter {
-        public FollowedGeocacheAdapter(Context context, List<Geocache> geocacheList) {
+    // MarkedGeocacheAdapter 可以继承 GeocacheAdapter 来避免重复代码
+    public static class MarkedGeocacheAdapter extends GeocacheAdapter {
+        public MarkedGeocacheAdapter(Context context, List<Geocache> geocacheList) {
             super(context, geocacheList);
         }
 
@@ -124,7 +124,7 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             super.onBindViewHolder(holder, position);
 
             if (holder instanceof GeocacheViewHolder) {
-                // 在此处你可以为 FollowedGeocacheAdapter 做自定义的修改，若有需要
+                // 在此处你可以为 MarkedGeocacheAdapter 做自定义的修改，若有需要
                 // 例如改变点击事件，或显示额外的字段
             }
         }

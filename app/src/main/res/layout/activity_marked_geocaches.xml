@@ -5,14 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#e7f1e6"
-    tools:context=".FollowedGeocachesActivity">
+    tools:context=".MarkedGeocachesActivity">
 
     <!-- Title -->
     <TextView
         android:id="@+id/tv_page_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Followed Geocaches"
+        android:text="Marked Geocaches"
         android:textColor="#396034"
         android:textSize="24sp"
         android:textStyle="bold"
@@ -33,7 +33,7 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- RecyclerView to display followed geocaches -->
+    <!-- RecyclerView to display marked geocaches -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="0dp"

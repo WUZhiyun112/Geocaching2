@@ -58,7 +58,7 @@
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity
-            android:name=".FollowedGeocachesActivity"
+            android:name=".MarkedGeocachesActivity"
             android:exported="false" />
         <activity
             android:name=".GeocacheSearchActivity"

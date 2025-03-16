@@ -11,7 +11,7 @@
     app:cardBackgroundColor="@android:color/white"
     app:cardElevation="4dp"
     app:cardCornerRadius="8dp"
-    tools:context=".FollowedGeocachesActivity">
+    tools:context=".MarkedGeocachesActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

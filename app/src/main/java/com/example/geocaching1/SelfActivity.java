@@ -33,8 +33,8 @@ public class SelfActivity extends AppCompatActivity {
 
         updateUIFromPreferences();
 
-        findViewById(R.id.follows_item).setOnClickListener(v -> {
-            Intent intent = new Intent(SelfActivity.this, FollowedGeocachesActivity.class);
+        findViewById(R.id.marks_item).setOnClickListener(v -> {
+            Intent intent = new Intent(SelfActivity.this, MarkedGeocachesActivity.class);
             startActivity(intent);
         });
         // 设置点击事件

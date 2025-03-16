@@ -2,7 +2,6 @@ package com.example.geocaching1;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -13,13 +12,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.geocaching1.adapter.FollowedGeocacheAdapter;
+import com.example.geocaching1.adapter.MarkedGeocacheAdapter;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -28,22 +24,22 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FollowedGeocachesActivity extends AppCompatActivity {
+public class MarkedGeocachesActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
-    private FollowedGeocacheAdapter adapter;
+    private MarkedGeocacheAdapter adapter;
     private ProgressBar progressBar;
-    private List<Geocache> followedGeocaches = new ArrayList<>();
+    private List<Geocache> markedGeocaches = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_followed_geocaches);
+        setContentView(R.layout.activity_marked_geocaches);
 
         recyclerView = findViewById(R.id.recyclerView);
         progressBar = findViewById(R.id.progressBar);
 
         // 初始化适配器
-        adapter = new FollowedGeocacheAdapter(followedGeocaches, this);
+        adapter = new MarkedGeocacheAdapter(markedGeocaches, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
@@ -59,23 +55,23 @@ public class FollowedGeocachesActivity extends AppCompatActivity {
         }
 
         // 加载关注的 Geocache 数据
-        loadFollowedGeocaches(userId, jwtToken);
+        loadMarkedGeocaches(userId, jwtToken);
     }
 
-    private void loadFollowedGeocaches(int userId, String jwtToken) {
+    private void loadMarkedGeocaches(int userId, String jwtToken) {
         progressBar.setVisibility(View.VISIBLE);
 
-        String url = "http://192.168.226.72:8080/api/follow/list?userId=" + userId;
+        String url = "http://192.168.70.72:8080/api/mark/list?userId=" + userId;
         RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
                 response -> {
                     progressBar.setVisibility(View.GONE);
-                    followedGeocaches.clear();
+                    markedGeocaches.clear();
                     for (int i = 0; i < response.length(); i++) {
                         try {
                             JSONObject geocacheJson = response.getJSONObject(i);
-                            followedGeocaches.add(new Geocache(
+                            markedGeocaches.add(new Geocache(
                                     geocacheJson.getString("geocacheCode"),
                                     geocacheJson.optString("geocacheName", "N/A"),
                                     geocacheJson.optString("geocacheType", "N/A"),

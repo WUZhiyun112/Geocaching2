@@ -1,9 +1,9 @@
 package com.example.geocaching1;
 
-public class FollowRequest {
+public class MarkRequest {
     private Integer userId;
     private String geocacheCode;
-    private boolean isFollowed;
+    private boolean isMarked;
 
     // Getter 和 Setter 方法
     public Integer getUserId() {
@@ -22,11 +22,11 @@ public class FollowRequest {
         this.geocacheCode = geocacheCode;
     }
 
-    public boolean isFollowed() {
-        return isFollowed;
+    public boolean isMarked() {
+        return isMarked;
     }
 
-    public void setFollowed(boolean followed) {
-        isFollowed = followed;
+    public void setMarked(boolean marked) {
+        isMarked = marked;
     }
 }

@@ -109,11 +109,11 @@
 
             <!-- 关注按钮 -->
             <Button
-                android:id="@+id/btn_follow"
+                android:id="@+id/btn_mark"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="4"
-                android:text="Follow"
+                android:text="Mark"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
 

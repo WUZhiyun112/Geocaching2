@@ -18,24 +18,24 @@ import com.example.geocaching1.R;
 import com.example.geocaching1.SimpleDetailActivity;
 
 import java.util.List;
-public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocacheAdapter.FollowedGeocacheViewHolder> {
+public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAdapter.MarkedGeocacheViewHolder> {
     private List<Geocache> geocacheList;
     private Context context;
 
-    public FollowedGeocacheAdapter(List<Geocache> geocacheList, Context context) {
+    public MarkedGeocacheAdapter(List<Geocache> geocacheList, Context context) {
         this.geocacheList = geocacheList;
         this.context = context;
     }
 
     @NonNull
     @Override
-    public FollowedGeocacheViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public MarkedGeocacheViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(context).inflate(R.layout.item_geocache, parent, false);
-        return new FollowedGeocacheViewHolder(itemView);
+        return new MarkedGeocacheViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull FollowedGeocacheViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MarkedGeocacheViewHolder holder, int position) {
         Geocache geocache = geocacheList.get(position);
         holder.nameTextView.setText(geocache.getName());
         holder.codeTextView.setText((geocache.getCode()));
@@ -46,21 +46,21 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
 
         holder.itemView.setOnClickListener(v -> {
             if (geocache == null) {
-                Log.e("FollowedGeocacheAdapter1111", "Geocache is null");
+                Log.e("MarkedGeocacheAdapter1111", "Geocache is null");
                 return;
             }
-            Log.d("FollowedGeocacheAdapter", "Clicked Geocache: " + geocache.getName() + " | Code: " + geocache.getCode());
-            Log.d("FollowedGeocacheAdapter1111", "Clicked Geocache: " + geocache.toString());
-            Log.d("FollowedGeocacheAdapter1111", "点击的 Geocache: " + geocache.getName());
+            Log.d("MarkedGeocacheAdapter", "Clicked Geocache: " + geocache.getName() + " | Code: " + geocache.getCode());
+            Log.d("MarkedGeocacheAdapter1111", "Clicked Geocache: " + geocache.toString());
+            Log.d("MarkedGeocacheAdapter1111", "点击的 Geocache: " + geocache.getName());
             Context context = v.getContext();
             if (context == null) {
-                Log.e("FollowedGeocacheAdapter1111", "Context is null");
+                Log.e("MarkedGeocacheAdapter1111", "Context is null");
                 return;
             }
-            Log.d("FollowedGeocacheAdapter1111", "Context is valid: " + context.getClass().getSimpleName());
+            Log.d("MarkedGeocacheAdapter1111", "Context is valid: " + context.getClass().getSimpleName());
             Intent intent = new Intent(context, SimpleDetailActivity.class);
             intent.putExtra("geocache", geocache); // 传递 Geocache 对象
-            Log.d("FollowedGeocacheAdapte1111r", "Starting GeocacheDetailActivity");
+            Log.d("MarkedGeocacheAdapte1111r", "Starting GeocacheDetailActivity");
             context.startActivity(intent);
         });
     }
@@ -70,11 +70,11 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
         return geocacheList.size();
     }
 
-    public static class FollowedGeocacheViewHolder extends RecyclerView.ViewHolder {
+    public static class MarkedGeocacheViewHolder extends RecyclerView.ViewHolder {
         TextView nameTextView, codeTextView, typeTextView, locationTextView;
         // 其他视图组件
 
-        public FollowedGeocacheViewHolder(@NonNull View itemView) {
+        public MarkedGeocacheViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.geocache_name);
             codeTextView = itemView.findViewById(R.id.geocache_code);
@@ -92,20 +92,20 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
             // 点击事件
             itemView.setOnClickListener(v -> {
                 if (geocache == null) {
-                    Log.e("FollowedGeocacheAdapter", "Geocache is null");
+                    Log.e("MarkedGeocacheAdapter", "Geocache is null");
                     return;
                 }
-                Log.d("FollowedGeocacheAdapter", "Geocache clicked: " + geocache.getName());
-                Log.d("FollowedGeocacheAdapter222", "Clicked Geocache: " + geocache.toString());
+                Log.d("MarkedGeocacheAdapter", "Geocache clicked: " + geocache.getName());
+                Log.d("MarkedGeocacheAdapter222", "Clicked Geocache: " + geocache.toString());
                 Context context = v.getContext();
                 if (context == null) {
-                    Log.e("FollowedGeocacheAdapter", "Context is null");
+                    Log.e("MarkedGeocacheAdapter", "Context is null");
                     return;
                 }
-                Log.d("FollowedGeocacheAdapter", "Context is valid: " + context.getClass().getSimpleName());
+                Log.d("MarkedGeocacheAdapter", "Context is valid: " + context.getClass().getSimpleName());
                 Intent intent = new Intent(context, GeocacheDetailActivity.class);
                 intent.putExtra("geocache", geocache); // 传递 Geocache 对象
-                Log.d("FollowedGeocacheAdapter", "Starting GeocacheDetailActivity");
+                Log.d("MarkedGeocacheAdapter", "Starting GeocacheDetailActivity");
                 context.startActivity(intent);
             });
         }
@@ -190,7 +190,7 @@ public class FollowedGeocacheAdapter extends RecyclerView.Adapter<FollowedGeocac
                 // 点击事件，跳转到详情页
                 itemView.setOnClickListener(v -> {
                     Context context = v.getContext();
-                    Log.d("FollowedGeocacheAdapter333", "Clicked Geocache: " + geocache.toString());
+                    Log.d("MarkedGeocacheAdapter333", "Clicked Geocache: " + geocache.toString());
                     Intent intent = new Intent(context,GeocacheDetailActivity.class);
                     intent.putExtra("geocache", geocache); // 传递数据
                     context.startActivity(intent);

@@ -49,7 +49,7 @@
 
     <!-- 我的关注 -->
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/follows_item"
+        android:id="@+id/marks_item"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
@@ -72,7 +72,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="My Follows"
+                android:text="My Marks"
                 android:textColor="#68945c"
                 android:textSize="18sp"/>
 
@@ -94,7 +94,7 @@
         app:cardBackgroundColor="@android:color/white"
         app:cardElevation="4dp"
         app:cardCornerRadius="8dp"
-        app:layout_constraintTop_toBottomOf="@id/follows_item"
+        app:layout_constraintTop_toBottomOf="@id/marks_item"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent">
 

@@ -53,7 +53,7 @@ public class SimpleDetailActivity extends AppCompatActivity {
     private AMap aMap;
     private BigDecimal latitude, longitude;
     private Button btnNavigate;
-    private Button btnFollow;
+    private Button btnMark;
     private boolean isRegistering = false;
 
 
@@ -75,12 +75,12 @@ public class SimpleDetailActivity extends AppCompatActivity {
             aMap = mapView.getMap();
         }
 
-        btnFollow = findViewById(R.id.btn_follow);
+        btnMark = findViewById(R.id.btn_mark);
         // 获取传递的 Geocache 对象
         Geocache geocache = getIntent().getParcelableExtra("geocache");
 
-        btnFollow.setOnClickListener(v -> {
-            toggleFollow(geocache);  // 调用 toggleFollow 方法
+        btnMark.setOnClickListener(v -> {
+            toggleMark(geocache);  // 调用 toggleMark 方法
         });
 
 
@@ -127,20 +127,20 @@ public class SimpleDetailActivity extends AppCompatActivity {
 
 
 
-        checkFollowStatus(geocache, isFollowed -> {
-            if (isFollowed == null) {
+        checkMarkStatus(geocache, isMarked -> {
+            if (isMarked == null) {
                 // 如果获取关注状态失败，可以显示错误提示
                 Toast.makeText(SimpleDetailActivity.this, "获取关注状态失败", Toast.LENGTH_SHORT).show();
             } else {
                 // 根据返回的关注状态更新按钮文本
-                if (isFollowed) {
-                    btnFollow.setText("Followed");
-                    btnFollow.setBackgroundColor(Color.GRAY); // Gray background
-                    btnFollow.setTextColor(Color.WHITE); // White text
+                if (isMarked) {
+                    btnMark.setText("Marked");
+                    btnMark.setBackgroundColor(Color.GRAY); // Gray background
+                    btnMark.setTextColor(Color.WHITE); // White text
                 } else {
-                    btnFollow.setText("Follow");
-                    btnFollow.setBackgroundColor(Color.parseColor("#396034")); // Green background
-                    btnFollow.setTextColor(Color.WHITE); // White text
+                    btnMark.setText("Mark");
+                    btnMark.setBackgroundColor(Color.parseColor("#396034")); // Green background
+                    btnMark.setTextColor(Color.WHITE); // White text
                 }
             }
         });
@@ -182,13 +182,13 @@ public class SimpleDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void saveFollowStatus(String geocacheCode, boolean isFollowed) {
+    private void saveMarkStatus(String geocacheCode, boolean isMarked) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putBoolean("FOLLOWED_" + geocacheCode, isFollowed);  // 保存关注状态
+        editor.putBoolean("MARKED_" + geocacheCode, isMarked);  // 保存关注状态
         editor.apply();
     }
-    private void toggleFollow(Geocache geocache) {
+    private void toggleMark(Geocache geocache) {
         if (!isNetworkAvailable()) {
             Toast.makeText(this, "网络不可用，请检查连接", Toast.LENGTH_SHORT).show();
             return;
@@ -207,8 +207,8 @@ public class SimpleDetailActivity extends AppCompatActivity {
         int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
         String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
 
-        Log.d("ToggleFollow", "userId: " + userId);  // 打印用户ID
-        Log.d("ToggleFollow", "JWT Token: " + token);  // 打印JWT令牌
+        Log.d("ToggleMark", "userId: " + userId);  // 打印用户ID
+        Log.d("ToggleMark", "JWT Token: " + token);  // 打印JWT令牌
 
         // 如果未登录，则提示登录
         if (userId == -1 || token.isEmpty()) {
@@ -222,14 +222,14 @@ public class SimpleDetailActivity extends AppCompatActivity {
         final String[] geocacheType = {geocache.getType()};  // 将geocacheType声明为final
         final String[] location = {geocache.getLocation()};  // 将location声明为final
 
-        Log.d("ToggleFollow", "geocacheCode: " + geocacheCode);
-        Log.d("ToggleFollow", "geocacheName: " + geocacheName[0]);
-        Log.d("ToggleFollow", "geocacheType: " + geocacheType[0]);
-        Log.d("ToggleFollow", "location: " + location[0]);
+        Log.d("ToggleMark", "geocacheCode: " + geocacheCode);
+        Log.d("ToggleMark", "geocacheName: " + geocacheName[0]);
+        Log.d("ToggleMark", "geocacheType: " + geocacheType[0]);
+        Log.d("ToggleMark", "location: " + location[0]);
 
 // 获取关注状态并执行相应操作
-        checkFollowStatus(geocache, isFollowed -> {
-            if (isFollowed == null) {
+        checkMarkStatus(geocache, isMarked -> {
+            if (isMarked == null) {
                 // 如果网络请求失败，标记操作完成
                 Toast.makeText(SimpleDetailActivity.this, "获取关注状态失败，请稍后重试", Toast.LENGTH_SHORT).show();
                 isRegistering = false;
@@ -246,9 +246,9 @@ public class SimpleDetailActivity extends AppCompatActivity {
             }
 
 
-            String apiUrl = isFollowed ?
-                    "http://192.168.226.72:8080/api/follow/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
-                    "http://192.168.226.72:8080/api/follow/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
+            String apiUrl = isMarked ?
+                    "http://192.168.70.72:8080/api/mark/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
+                    "http://192.168.70.72:8080/api/mark/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
                             "&geocacheName=" + geocacheName[0] + "&geocacheType=" + geocacheType[0] + "&location=" + location[0];
 
             // 创建 OkHttpClient 实例并发送请求
@@ -256,7 +256,7 @@ public class SimpleDetailActivity extends AppCompatActivity {
 
             // 根据关注状态选择合适的请求方法（POST 或 DELETE）
             Request request;
-            if (isFollowed) {
+            if (isMarked) {
                 // 如果已经关注，使用 DELETE 请求
                 request = new Request.Builder()
                         .url(apiUrl)
@@ -296,17 +296,17 @@ public class SimpleDetailActivity extends AppCompatActivity {
                     if (response.isSuccessful()) {
                         runOnUiThread(() -> {
                             // 更新按钮文本
-                            if (!isFollowed) {
-                                btnFollow.setText("Followed");
-                                btnFollow.setBackgroundColor(Color.GRAY); // Gray background
-                                btnFollow.setTextColor(Color.WHITE); // White text
-                                saveFollowStatus(geocacheCode, true);  // 保存关注状态
+                            if (!isMarked) {
+                                btnMark.setText("Marked");
+                                btnMark.setBackgroundColor(Color.GRAY); // Gray background
+                                btnMark.setTextColor(Color.WHITE); // White text
+                                saveMarkStatus(geocacheCode, true);  // 保存关注状态
                                 Toast.makeText(SimpleDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show();
                             } else {
-                                btnFollow.setText("Follow");
-                                btnFollow.setBackgroundColor(Color.parseColor("#396034")); // Green background
-                                btnFollow.setTextColor(Color.WHITE); // White text
-                                saveFollowStatus(geocacheCode, false);  // 保存取消关注状态
+                                btnMark.setText("Mark");
+                                btnMark.setBackgroundColor(Color.parseColor("#396034")); // Green background
+                                btnMark.setTextColor(Color.WHITE); // White text
+                                saveMarkStatus(geocacheCode, false);  // 保存取消关注状态
                                 Toast.makeText(SimpleDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show();
                             }
                             isRegistering = false;  // 操作完成
@@ -327,14 +327,14 @@ public class SimpleDetailActivity extends AppCompatActivity {
         });
     }
 
-    private void checkFollowStatus(Geocache geocache, FollowStatusCallback callback) {
+    private void checkMarkStatus(Geocache geocache, MarkStatusCallback callback) {
         // 发送请求获取关注状态
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         int userId = prefs.getInt("USER_ID", -1);  // 获取用户ID
         String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
 
         String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
-        String apiUrl = "http://192.168.226.72:8080/api/follow/list?userId=" + userId;
+        String apiUrl = "http://192.168.70.72:8080/api/mark/list?userId=" + userId;
 
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
         Request request = new Request.Builder()
@@ -359,22 +359,22 @@ public class SimpleDetailActivity extends AppCompatActivity {
                             return;
                         }
 
-                        JSONArray followList = new JSONArray(responseBody);
-                        boolean isFollowed = false;
+                        JSONArray markList = new JSONArray(responseBody);
+                        boolean isMarked = false;
 
                         // 遍历关注列表
-                        for (int i = 0; i < followList.length(); i++) {
-                            JSONObject followItem = followList.getJSONObject(i);
-                            String followedGeocacheCode = followItem.getString("geocacheCode");
-                            boolean followed = followItem.getBoolean("followed");
+                        for (int i = 0; i < markList.length(); i++) {
+                            JSONObject markItem = markList.getJSONObject(i);
+                            String markedGeocacheCode = markItem.getString("geocacheCode");
+                            boolean marked = markItem.getBoolean("marked");
 
-                            if (followedGeocacheCode.equals(geocacheCode) && followed) {
-                                isFollowed = true;
+                            if (markedGeocacheCode.equals(geocacheCode) && marked) {
+                                isMarked = true;
                                 break;
                             }
                         }
 
-                        callback.onResult(isFollowed);
+                        callback.onResult(isMarked);
                     } catch (JSONException e) {
                         e.printStackTrace();
                         callback.onResult(null);
@@ -386,8 +386,8 @@ public class SimpleDetailActivity extends AppCompatActivity {
         });
     }
 
-    interface FollowStatusCallback {
-        void onResult(Boolean isFollowed);
+    interface MarkStatusCallback {
+        void onResult(Boolean isMarked);
     }
 
     private boolean isNetworkAvailable() {
