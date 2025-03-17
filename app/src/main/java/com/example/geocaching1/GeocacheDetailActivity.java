@@ -73,6 +73,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geocache_detail);
 
+
         // 初始化视图
         tvName = findViewById(R.id.tv_name);
         tvType = findViewById(R.id.tv_type);
@@ -83,6 +84,16 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         tvStatus = findViewById(R.id.tv_status);
         tvDescriptionTitle = findViewById(R.id.tv_description_title);
         mapView = findViewById(R.id.map_view);
+
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
+        String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
+        String username = prefs.getString("USERNAME", "N/A");
+
+        Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
+        Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
+        Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
+
 
         // 地图生命周期管理
         mapView.onCreate(savedInstanceState);
@@ -110,14 +121,14 @@ public class GeocacheDetailActivity extends AppCompatActivity {
 
         tvChangeFoundStatus.setOnClickListener(v -> {
             // 获取 SharedPreferences
-            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-            int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
-            String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
-            String username = prefs.getString("USERNAME", "N/A");
-
-            Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
-            Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
-            Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
+//            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+//            int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
+//            String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
+//            String username = prefs.getString("USERNAME", "N/A");
+//
+//            Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
+//            Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
+//            Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
 
             // 状态选项
             String[] options = {"Haven’t started", "Found it", "Searched but not found"};

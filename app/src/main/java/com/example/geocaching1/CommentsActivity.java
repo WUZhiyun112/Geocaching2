@@ -3,6 +3,7 @@ package com.example.geocaching1;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -70,10 +71,14 @@ public class CommentsActivity extends AppCompatActivity {
         recyclerViewComments.setAdapter(commentAdapter);
 
         // 获取用户信息
-        SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-        userId = prefs.getInt("userId", -1);
-        username = prefs.getString("username", "N/A");
-        token = prefs.getString("JWT_TOKEN", "");
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
+        token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
+        username = prefs.getString("USERNAME", "N/A");
+
+        Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
+        Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
+        Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
 
         client = new OkHttpClient(); // 初始化 OkHttpClient
 
@@ -97,6 +102,9 @@ public class CommentsActivity extends AppCompatActivity {
                 .header("Authorization", "Bearer " + token)
                 .get()
                 .build();
+
+        Log.d("API Request", "URL: " + apiUrl);
+        Log.d("API Request", "Token: " + token);
 
         client.newCall(request).enqueue(new Callback() {
             @Override
@@ -164,6 +172,7 @@ public class CommentsActivity extends AppCompatActivity {
         RatingBar ratingBar = dialogView.findViewById(R.id.rating_bar);
 
         builder.setView(dialogView);
+
         builder.setPositiveButton("Submit", (dialog, which) -> {
             String commentContent = etCommentContent.getText().toString().trim();
             int rating = (int) ratingBar.getRating();
@@ -204,7 +213,8 @@ public class CommentsActivity extends AppCompatActivity {
     }
 
     private void saveComment(Comment comment) {
-        String apiUrl = "http://192.168.70.72:8080/api/comments";
+        String apiUrl = "http://192.168.70.72:8080/api/comments/add";
+
 
         JSONObject json = new JSONObject();
         try {
@@ -215,7 +225,8 @@ public class CommentsActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
+        Log.d("saveComment", "Sending JSON: " + json.toString());
+        Log.d("saveComment", "Token: " + token);
         RequestBody requestBody = RequestBody.create(json.toString(), MediaType.get("application/json; charset=utf-8"));
 
         Request request = new Request.Builder()
@@ -232,15 +243,20 @@ public class CommentsActivity extends AppCompatActivity {
 
             @Override
             public void onResponse(Call call, Response response) throws IOException {
+                String responseBody = response.body().string();
+                Log.d("saveComment", "Response Code: " + response.code());  // 打印响应码
+                Log.d("saveComment", "Response Body: " + responseBody);  // 打印响应体内容
+
                 if (response.isSuccessful()) {
                     runOnUiThread(() -> {
                         Toast.makeText(CommentsActivity.this, "评论提交成功！", Toast.LENGTH_SHORT).show();
                         loadComments(); // 重新加载评论
                     });
                 } else {
-                    runOnUiThread(() -> Toast.makeText(CommentsActivity.this, "评论提交失败", Toast.LENGTH_SHORT).show());
+                    runOnUiThread(() -> Toast.makeText(CommentsActivity.this, "评论提交失败: " + responseBody, Toast.LENGTH_SHORT).show());
                 }
             }
+
         });
     }
 }
