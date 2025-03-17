@@ -12,7 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.geocaching1.Geocache;
+import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.R;
 import com.example.geocaching1.adapter.MarkedGeocacheAdapter;
 import com.google.android.material.textfield.MaterialAutoCompleteTextView;

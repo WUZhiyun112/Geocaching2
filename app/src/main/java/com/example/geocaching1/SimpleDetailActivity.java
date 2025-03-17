@@ -22,6 +22,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.CameraUpdateFactory;
+import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.utils.ApiClient;
 
 import android.widget.Button;

@@ -64,6 +64,9 @@
             android:name=".GeocacheSearchActivity"
             android:exported="false" />
         <activity
+            android:name=".CommentsActivity"
+            android:exported="false" />
+        <activity
             android:name=".EnterActivity"
             android:exported="true">
             <intent-filter>

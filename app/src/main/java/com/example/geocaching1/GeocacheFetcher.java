@@ -2,6 +2,8 @@ package com.example.geocaching1;
 
 import android.util.Log;
 
+import com.example.geocaching1.model.Geocache;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 

@@ -13,7 +13,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.example.geocaching1.Geocache;
+import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.R;
 import com.example.geocaching1.adapter.GeocacheSearchPagerAdapter;
 import com.example.geocaching1.fragment.FoundGeocachesFragment;

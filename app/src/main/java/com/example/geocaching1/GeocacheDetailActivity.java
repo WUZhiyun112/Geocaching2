@@ -24,6 +24,7 @@ import com.amap.api.maps.model.LatLng;
 import com.amap.api.maps.model.MarkerOptions;
 import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.CameraUpdateFactory;
+import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.utils.ApiClient;
 
 import android.widget.Button;
@@ -100,9 +101,23 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         TextView tvChangeFoundStatus = findViewById(R.id.tv_change_found_status);
         TextView tvFoundStatus = findViewById(R.id.tv_found_status);
 
+        Button btnComment = findViewById(R.id.btn_comment);
+        btnComment.setOnClickListener(v -> {
+            Intent intent = new Intent(GeocacheDetailActivity.this, CommentsActivity.class);
+            intent.putExtra("geocacheCode", geocache.getCode()); // 传递 geocache 的 code
+            startActivity(intent);
+        });
+
         tvChangeFoundStatus.setOnClickListener(v -> {
             // 获取 SharedPreferences
             SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
+            String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
+            String username = prefs.getString("USERNAME", "N/A");
+
+            Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
+            Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
+            Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
 
             // 状态选项
             String[] options = {"Haven’t started", "Found it", "Searched but not found"};

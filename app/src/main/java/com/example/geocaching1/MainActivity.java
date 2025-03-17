@@ -66,6 +66,7 @@ import com.amap.api.services.geocoder.RegeocodeQuery;
 import com.amap.api.services.geocoder.RegeocodeResult;
 import com.example.geocaching1.adapter.MarkedGeocacheAdapter;
 import com.example.geocaching1.databinding.ActivityMainBinding;
+import com.example.geocaching1.model.Geocache;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;

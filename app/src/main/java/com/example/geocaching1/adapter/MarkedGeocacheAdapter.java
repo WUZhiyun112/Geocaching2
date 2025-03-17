@@ -12,7 +12,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.geocaching1.Geocache;
+import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.GeocacheDetailActivity;
 import com.example.geocaching1.R;
 import com.example.geocaching1.SimpleDetailActivity;
