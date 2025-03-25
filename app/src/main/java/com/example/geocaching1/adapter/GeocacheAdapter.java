@@ -91,7 +91,7 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvGeocacheName.setText(geocache.getName());
             tvGeocacheType.setText("Type: " + geocache.getType());
             tvLocation.setText("Location: " + geocache.getLocation());
-            tvFoundAt.setText("Found At: " + (geocache.getFoundAt() != null ? geocache.getFoundAt() : "N/A"));
+            tvFoundAt.setText("Found At: " + geocache.getFormattedFoundAt());
             tvStatus.setText("Status: " + geocache.getStatus());
 
             // 点击事件，跳转到详情页

@@ -74,12 +74,17 @@ public class GeocacheSearchActivity extends AppCompatActivity {
                     for (int i = 0; i < response.length(); i++) {
                         try {
                             JSONObject obj = response.getJSONObject(i);
+                            String foundAtValue = obj.isNull("foundAt") ? "N/A" : obj.getString("foundAt");
+                            Log.d("JSON_PARSING", "Code: " + obj.getString("geocacheCode")
+                                    + " | Raw foundAt: " + obj.optString("foundAt", "NULL")
+                                    + " | Parsed: " + foundAtValue);
+
                             Geocache geocache = new Geocache(
                                     obj.getString("geocacheCode"),
                                     obj.getString("geocacheName"),
                                     obj.getString("geocacheType"),
                                     obj.getString("location"),
-                                    obj.isNull("foundAt") ? "N/A" : obj.getString("foundAt"), // 处理 foundAt 为 null 的情况
+                                    foundAtValue,
                                     obj.getString("status")
                             );
 
@@ -96,6 +101,8 @@ public class GeocacheSearchActivity extends AppCompatActivity {
 
                     // Update the fragments with the fetched data
                     updateFragments();
+                    Log.d("GeocacheSearchActivity", "API Response: " + response.toString());
+
                 },
                 error -> Log.e("GeocacheSearchActivity", "Request Error: " + error.toString())
         ) {
@@ -110,17 +117,18 @@ public class GeocacheSearchActivity extends AppCompatActivity {
         queue.add(request);
     }
 
+    // GeocacheSearchActivity.java
     private void updateFragments() {
-        FoundGeocachesFragment foundFragment = (FoundGeocachesFragment) getSupportFragmentManager()
-                .findFragmentByTag("android:switcher:" + viewPager.getId() + ":0");
-        SearchedNotFoundGeocachesFragment notFoundFragment = (SearchedNotFoundGeocachesFragment) getSupportFragmentManager()
-                .findFragmentByTag("android:switcher:" + viewPager.getId() + ":1");
+        // 使用防御性拷贝
+        List<Geocache> safeFoundList = new ArrayList<>(foundGeocaches);
+        List<Geocache> safeNotFoundList = new ArrayList<>(notFoundGeocaches);
+
+        FoundGeocachesFragment foundFragment = (FoundGeocachesFragment)
+                getSupportFragmentManager().findFragmentByTag("android:switcher:" + viewPager.getId() + ":0");
 
         if (foundFragment != null) {
-            foundFragment.updateGeocaches(foundGeocaches);
-        }
-        if (notFoundFragment != null) {
-            notFoundFragment.updateGeocaches(notFoundGeocaches);
+            Log.d("Data_Transfer", "Transferring foundAt: " + safeFoundList.get(0).getFoundAt());
+            foundFragment.updateGeocaches(safeFoundList);
         }
     }
 }
