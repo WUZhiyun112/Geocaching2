@@ -56,6 +56,12 @@ public class SelfActivity extends AppCompatActivity {
         });
 
 
+        findViewById(R.id.my_comments_item).setOnClickListener(v -> {
+            Intent intent = new Intent(SelfActivity.this, MyCommentsActivity.class);
+            startActivity(intent);
+        });
+
+
         findViewById(R.id.settings_item).setOnClickListener(v -> {
 //            startActivity(new Intent(SelfActivity.this, SettingsActivity.class));
         });
