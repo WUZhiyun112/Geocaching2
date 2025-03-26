@@ -62,7 +62,7 @@ public class MarkedGeocachesActivity extends AppCompatActivity {
     private void loadMarkedGeocaches(int userId, String jwtToken) {
         progressBar.setVisibility(View.VISIBLE);
 
-        String url = "http://192.168.146.72:8080/api/mark/list?userId=" + userId;
+        String url = "http://192.168.147.72:8080/api/mark/list?userId=" + userId;
         RequestQueue queue = Volley.newRequestQueue(this);
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,

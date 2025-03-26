@@ -13,27 +13,39 @@
         android:paddingTop="16dp">
 
         <!-- 上方信息部分 -->
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:background="@android:color/white">
 
-            <!-- 名称 -->
+            <!-- Name -->
             <TextView
                 android:id="@+id/tv_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Name"
                 android:textColor="#396034"
-                android:textSize="24sp"
-                android:textStyle="bold" />
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:ellipsize="end"
+                android:maxLines="2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- Progress Status Row -->
             <LinearLayout
+                android:id="@+id/status_layout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginTop="4dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:layout_marginTop="8dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_name">
 
                 <TextView
                     android:id="@+id/tv_found_status"
@@ -41,88 +53,99 @@
                     android:layout_height="wrap_content"
                     android:text="My Progress: Searching"
                     android:textColor="#666666"
-                    android:textSize="16sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tv_change_found_status"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Set"
+                    android:text="Change"
                     android:textColor="#2BA5FB"
-                    android:textSize="16sp"
+                    android:textSize="14sp"
                     android:paddingStart="8dp"
                     android:clickable="true"
                     android:focusable="true"/>
             </LinearLayout>
 
-
-
+            <!-- Location -->
             <TextView
                 android:id="@+id/tv_location"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Location"
                 android:textColor="#666666"
                 android:textSize="12sp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
+                android:layout_marginTop="12dp"
                 android:lineSpacingExtra="4dp"
-                android:layout_marginLeft="-5dp"/>
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/status_layout" />
 
-
+            <!-- Type -->
             <TextView
                 android:id="@+id/tv_type"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Type"
                 android:textColor="#666666"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
+                android:textSize="14sp"
+                android:layout_marginTop="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_location" />
 
-            <!-- 难度 -->
+            <!-- Difficulty -->
             <TextView
                 android:id="@+id/tv_difficulty"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Difficulty"
                 android:textColor="#666666"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_type" />
 
-            <!-- 大小 -->
+            <!-- Size -->
             <TextView
                 android:id="@+id/tv_size"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Size"
                 android:textColor="#666666"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_difficulty" />
 
-            <!-- 状态 -->
+            <!-- Status -->
             <TextView
                 android:id="@+id/tv_status"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="Status"
                 android:textColor="#666666"
-                android:textSize="16sp"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
+                android:textSize="14sp"
+                android:layout_marginTop="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_size" />
 
+        </androidx.constraintlayout.widget.ConstraintLayout>
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="6dp"
-            app:cardBackgroundColor="@android:color/transparent">  <!-- 设置透明背景 -->
+            app:cardElevation="2dp">
 
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:padding="8dp">
+                android:layout_height="match_parent">
 
                 <com.amap.api.maps.MapView
                     android:id="@+id/map_view"
@@ -130,50 +153,67 @@
                     android:layout_height="match_parent"/>
 
             </FrameLayout>
-
         </androidx.cardview.widget.CardView>
 
-        <!-- 单独的描述部分 -->
+        <!-- Description Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
             app:cardCornerRadius="12dp"
-            app:cardElevation="6dp"
-            app:cardBackgroundColor="@android:color/white">
+            app:cardElevation="2dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="16dp">
 
-                <!-- 描述标题 -->
                 <TextView
                     android:id="@+id/tv_description_title"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="描述"
-                    android:textColor="#396034"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
-
-                <!-- 可滚动的描述内容 -->
-                <ScrollView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:text="Description"
+                    android:textColor="#396034"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
 
-                    <TextView
-                        android:id="@+id/tv_description"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:textColor="#666666"
-                        android:textSize="16sp" />
-                </ScrollView>
-
+                <TextView
+                    android:id="@+id/tv_description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#666666"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp"/>
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
+        <!-- Comments Entry -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <TextView
+                android:id="@+id/btn_comment"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackground"
+                android:drawableEnd="@drawable/ic_arrow_right"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Comments"
+                android:textColor="#333333"
+                android:textSize="15sp" />
         </androidx.cardview.widget.CardView>
 
         <!-- Buttons in a horizontal row -->
@@ -202,12 +242,13 @@
                 android:text="Mark"
                 android:layout_marginStart="8dp"/>
         </LinearLayout>
-        <Button
-            android:id="@+id/btn_comment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Comments"
-            android:onClick="onCommentClick"/>
+<!--        <Button-->
+<!--            android:id="@+id/btn_comment"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="Comments"-->
+<!--            android:onClick="onCommentClick"/>-->
+
 
     </LinearLayout>
 

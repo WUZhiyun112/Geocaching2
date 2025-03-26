@@ -1,37 +1,69 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="8dp"
-    android:layout_marginBottom="8dp"
-    android:background="?android:attr/selectableItemBackground">
+    android:padding="16dp"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true">
 
-    <TextView
-        android:id="@+id/tv_username"
-        android:layout_width="wrap_content"
+    <!-- Header Row (Username + Time) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Username"
-        android:textStyle="bold"
-        android:textSize="16sp"/>
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/tv_comment_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Time"
-        android:textSize="12sp"/>
+        <TextView
+            android:id="@+id/tv_username"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Username"
+            android:textColor="#333333"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="JohnDoe"/>
 
+        <View
+            android:layout_width="8dp"
+            android:layout_height="1dp"/>
+
+        <TextView
+            android:id="@+id/tv_comment_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#888888"
+            android:textSize="12sp"
+            tools:text="2 hours ago"/>
+    </LinearLayout>
+
+    <!-- Comment Content -->
     <TextView
         android:id="@+id/tv_comment_content"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Content"
-        android:textSize="14sp"/>
+        android:layout_marginTop="8dp"
+        android:textColor="#444444"
+        android:textSize="14sp"
+        android:lineSpacingExtra="4dp"
+        tools:text="This is a sample comment text that might span multiple lines to show how the layout handles longer content."/>
 
-    <TextView
-        android:id="@+id/tv_rating"
-        android:layout_width="wrap_content"
+    <!-- Rating (aligned to end) -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Rating"
-        android:textSize="14sp"/>
+        android:layout_marginTop="8dp"
+        android:gravity="end">
+
+        <TextView
+            android:id="@+id/tv_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="#396034"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="Rating: ★★★★☆"/>
+    </LinearLayout>
+
 </LinearLayout>

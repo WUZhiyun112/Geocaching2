@@ -248,8 +248,8 @@ public class SimpleDetailActivity extends AppCompatActivity {
 
 
             String apiUrl = isMarked ?
-                    "http://192.168.146.72:8080/api/mark/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
-                    "http://192.168.146.72:8080/api/mark/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
+                    "http://192.168.147.72:8080/api/mark/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
+                    "http://192.168.147.72:8080/api/mark/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
                             "&geocacheName=" + geocacheName[0] + "&geocacheType=" + geocacheType[0] + "&location=" + location[0];
 
             // 创建 OkHttpClient 实例并发送请求
@@ -335,7 +335,7 @@ public class SimpleDetailActivity extends AppCompatActivity {
         String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
 
         String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
-        String apiUrl = "http://192.168.146.72:8080/api/mark/list?userId=" + userId;
+        String apiUrl = "http://192.168.147.72:8080/api/mark/list?userId=" + userId;
 
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
         Request request = new Request.Builder()
