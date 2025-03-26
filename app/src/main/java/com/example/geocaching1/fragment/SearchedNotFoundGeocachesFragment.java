@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -191,8 +192,12 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
         if (newGeocaches != null && !newGeocaches.isEmpty()) {
             Log.d("NotFoundFragment", "Updating with " + newGeocaches.size() + " items");
 
-            // 使用适配器的setData方法更新数据
-            adapter.setData(newGeocaches);
+            // 创建反转后的列表
+            List<Geocache> reversedList = new ArrayList<>(newGeocaches);
+            Collections.reverse(reversedList);
+
+            // 使用适配器的setData方法更新数据（使用反转后的列表）
+            adapter.setData(reversedList);
 
             // 更新UI状态
             recyclerView.setVisibility(View.VISIBLE);

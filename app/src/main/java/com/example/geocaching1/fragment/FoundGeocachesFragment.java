@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 public class FoundGeocachesFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
@@ -59,15 +61,24 @@ public class FoundGeocachesFragment extends Fragment {
 
     public void updateGeocaches(List<Geocache> newGeocaches) {
         if (newGeocaches != null && !newGeocaches.isEmpty()) {
+            // Sort the list by 'foundAt' in descending order
+            Collections.sort(newGeocaches, new Comparator<Geocache>() {
+                @Override
+                public int compare(Geocache g1, Geocache g2) {
+                    // Assuming getFoundAt() returns a Date or similar object
+                    return g2.getFoundAt().compareTo(g1.getFoundAt()); // Descending order
+                }
+            });
+
             Log.d("Fragment_Debug", "First item foundAt: " + newGeocaches.get(0).getFoundAt());
 
-            // 直接使用适配器的setData方法更新数据
+            // Directly use the adapter's setData method to update the data
             adapter.setData(newGeocaches);
 
             recyclerView.setVisibility(View.VISIBLE);
             tvNoGeocache.setVisibility(View.GONE);
         } else {
-            // 清空适配器数据
+            // Clear the adapter data
             adapter.setData(new ArrayList<>());
             recyclerView.setVisibility(View.GONE);
             tvNoGeocache.setVisibility(View.VISIBLE);
