@@ -53,24 +53,36 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
             return "Unknown time";
         }
 
-        // 使用相对时间显示（如"2小时前"）
         long now = System.currentTimeMillis();
-        long diff = now - commentTime.getTime();
+        long commentMillis = commentTime.getTime();
+        long diff = now - commentMillis;
 
-        if (diff < 60 * 1000) {
-            return "Just now";
-        } else if (diff < 60 * 60 * 1000) {
-            long minutes = diff / (60 * 1000);
-            return minutes + " min ago";
-        } else if (diff < 24 * 60 * 60 * 1000) {
-            long hours = diff / (60 * 60 * 1000);
-            return hours + " hours ago";
+        // For comments within 1 month (30 days)
+        if (diff < 30L * 24 * 60 * 60 * 1000) {
+            return getRelativeTimeEnglish(diff);
         } else {
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
-            return sdf.format(commentTime);
+            // For older comments show full date
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
+            return sdf.format(commentTime); // e.g. "May 15, 2023"
         }
     }
 
+    private String getRelativeTimeEnglish(long diffMillis) {
+        long seconds = diffMillis / 1000;
+        long minutes = seconds / 60;
+        long hours = minutes / 60;
+        long days = hours / 24;
+
+        if (seconds < 60) {
+            return "Just now";
+        } else if (minutes < 60) {
+            return minutes + (minutes == 1 ? " minute ago" : " minutes ago");
+        } else if (hours < 24) {
+            return hours + (hours == 1 ? " hour ago" : " hours ago");
+        } else {
+            return days + (days == 1 ? " day ago" : " days ago");
+        }
+    }
     public static class CommentViewHolder extends RecyclerView.ViewHolder {
         TextView username, commentTime, content, rating;
 

@@ -199,28 +199,22 @@ public class CommentsActivity extends AppCompatActivity {
             return new Date();
         }
 
-        // 尝试常见的时间格式
         String[] patterns = {
                 "yyyy-MM-dd'T'HH:mm:ss",    // ISO 8601
-                "yyyy-MM-dd HH:mm:ss",      // 标准格式
-                "yyyy-MM-dd HH:mm",         // 不带秒
-                "yyyy-MM-dd",               // 只有日期
-                "MM/dd/yyyy HH:mm:ss",      // 美国格式
-                "dd/MM/yyyy HH:mm:ss"       // 欧洲格式
+                "yyyy-MM-dd HH:mm:ss",      // Standard format
+                "yyyy-MM-dd HH:mm",         // Without seconds
+                "yyyy-MM-dd"                // Date only
         };
 
         for (String pattern : patterns) {
             try {
-                SimpleDateFormat sdf = new SimpleDateFormat(pattern, Locale.getDefault());
-                sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // 如果时间是UTC
+                SimpleDateFormat sdf = new SimpleDateFormat(pattern, Locale.ENGLISH);
                 return sdf.parse(commentTime);
             } catch (ParseException e) {
-                // 继续尝试下一种格式
+                // Try next format
             }
         }
-
-        Log.e("TimeParse", "无法解析时间: " + commentTime);
-        return new Date(); // 返回当前时间作为默认值
+        return new Date();
     }
     private void saveComment(Comment comment) {
         String apiUrl = "http://192.168.147.72:8080/api/comments/add";
