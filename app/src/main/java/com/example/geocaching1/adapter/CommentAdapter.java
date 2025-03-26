@@ -37,12 +37,26 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
         Comment comment = commentList.get(position);
-        holder.username.setText("User: " + comment.getUsername()); // 显示用户名
-        holder.commentTime.setText(formatCommentTime(comment.getCommentTime())); // 格式化时间
+        holder.username.setText(comment.getUsername());
+        holder.commentTime.setText(formatCommentTime(comment.getCommentTime()));
         holder.content.setText(comment.getContent());
-        holder.rating.setText("Rating: " + comment.getRating());
+
+        // Convert numeric rating to stars
+        holder.rating.setText("Rating: "+getStarRating(comment.getRating()));
     }
 
+    private String getStarRating(int rating) {
+        StringBuilder stars = new StringBuilder();
+        // Add filled stars
+        for (int i = 0; i < rating; i++) {
+            stars.append("★");
+        }
+        // Add empty stars
+        for (int i = rating; i < 5; i++) {
+            stars.append("☆");
+        }
+        return stars.toString();
+    }
     @Override
     public int getItemCount() {
         return commentList.size();
