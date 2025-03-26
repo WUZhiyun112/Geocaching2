@@ -67,11 +67,28 @@ public class SelfActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.logout_item).setOnClickListener(v -> {
+            // 清除SharedPreferences中的登录信息
             SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-            prefs.edit().remove("JWT_TOKEN").apply();
-            Toast.makeText(SelfActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(SelfActivity.this, LoginActivity.class));
+            prefs.edit()
+                    .remove("JWT_TOKEN")
+                    .remove("USER_ID")
+                    .remove("USERNAME")
+                    .remove("EMAIL")
+                    .apply();
+
+            // 创建跳转到EnterActivity的Intent
+            Intent intent = new Intent(SelfActivity.this, EnterActivity.class);
+
+            // 清除Activity堆栈
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+            // 启动EnterActivity
+            startActivity(intent);
+
+            // 结束当前Activity
             finish();
+
+            Toast.makeText(SelfActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
         });
 
     }
