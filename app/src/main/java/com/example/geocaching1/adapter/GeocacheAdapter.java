@@ -15,6 +15,7 @@ import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.GeocacheDetailActivity;
 import com.example.geocaching1.R;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -23,33 +24,35 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     private List<Geocache> geocacheList;
     private Context context;
-    private boolean hasMoreData = true; // 是否还有更多数据可以加载
+    private boolean hasMoreData = false; // 默认没有更多数据
+    private boolean showLoading = false; // 控制是否显示加载视图
 
-    public GeocacheAdapter(Context context, List<Geocache> geocacheList) {
+    public GeocacheAdapter(Context context) {
         this.context = context;
-        this.geocacheList = geocacheList;
+        this.geocacheList = new ArrayList<>(); // 初始化为空列表
     }
 
     @Override
     public int getItemViewType(int position) {
-        return (position < geocacheList.size()) ? VIEW_TYPE_ITEM : VIEW_TYPE_LOADING;
+        // 只有当有更多数据且是最后一个位置时才显示加载视图
+        return (showLoading && position == geocacheList.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_ITEM) {
-            View view = LayoutInflater.from(context).inflate(R.layout.item_search, parent, false);
-            return new GeocacheViewHolder(view);
+        if (viewType == VIEW_TYPE_LOADING) {
+            View view = LayoutInflater.from(context).inflate(R.layout.item_loading, parent, false);
+            return new LoadingViewHolder(view);
         } else {
             View view = LayoutInflater.from(context).inflate(R.layout.item_search, parent, false);
-            return new LoadingViewHolder(view);
+            return new GeocacheViewHolder(view);
         }
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        if (holder instanceof GeocacheViewHolder) {
+        if (holder instanceof GeocacheViewHolder && position < geocacheList.size()) {
             Geocache geocache = geocacheList.get(position);
             ((GeocacheViewHolder) holder).bind(geocache);
         }
@@ -57,20 +60,43 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        return geocacheList.size() + (hasMoreData ? 1 : 0); // 如果有更多数据，就添加加载视图
+        // 只有当有更多数据时才额外计算加载视图
+        return geocacheList.size() + (showLoading ? 1 : 0);
     }
 
-    public void updateData(List<Geocache> newGeocacheList, boolean isFirstPage) {
-        if (isFirstPage) {
-            geocacheList.clear(); // 只有第一页才清空
+    public void setData(List<Geocache> newGeocacheList) {
+        geocacheList.clear();
+        if (newGeocacheList != null) {
+            geocacheList.addAll(newGeocacheList);
         }
-        geocacheList.addAll(newGeocacheList);
-        notifyItemRangeInserted(geocacheList.size() - newGeocacheList.size(), newGeocacheList.size());
+        notifyDataSetChanged();
+    }
+
+    public void addData(List<Geocache> newGeocacheList) {
+        if (newGeocacheList != null && !newGeocacheList.isEmpty()) {
+            int startPosition = geocacheList.size();
+            geocacheList.addAll(newGeocacheList);
+            notifyItemRangeInserted(startPosition, newGeocacheList.size());
+        }
+    }
+
+    public void setLoading(boolean loading) {
+        if (showLoading != loading) {
+            showLoading = loading;
+            if (loading) {
+                notifyItemInserted(geocacheList.size());
+            } else {
+                notifyItemRemoved(geocacheList.size());
+            }
+        }
     }
 
     public void setHasMoreData(boolean hasMoreData) {
         this.hasMoreData = hasMoreData;
-        notifyItemChanged(geocacheList.size() - 1); // 当数据加载完成时，更新加载视图
+    }
+
+    public boolean isEmpty() {
+        return geocacheList.isEmpty();
     }
 
     public static class GeocacheViewHolder extends RecyclerView.ViewHolder {
@@ -94,11 +120,10 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvFoundAt.setText("Found At: " + geocache.getFormattedFoundAt());
             tvStatus.setText("Status: " + geocache.getStatus());
 
-            // 点击事件，跳转到详情页
             itemView.setOnClickListener(v -> {
                 Context context = v.getContext();
                 Intent intent = new Intent(context, GeocacheDetailActivity.class);
-                intent.putExtra("geocache", geocache); // 传递数据
+                intent.putExtra("geocache", geocache);
                 context.startActivity(intent);
             });
         }
@@ -110,23 +135,6 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         public LoadingViewHolder(@NonNull View itemView) {
             super(itemView);
             progressBar = itemView.findViewById(R.id.progressBar);
-        }
-    }
-
-    // MarkedGeocacheAdapter 可以继承 GeocacheAdapter 来避免重复代码
-    public static class MarkedGeocacheAdapter extends GeocacheAdapter {
-        public MarkedGeocacheAdapter(Context context, List<Geocache> geocacheList) {
-            super(context, geocacheList);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            super.onBindViewHolder(holder, position);
-
-            if (holder instanceof GeocacheViewHolder) {
-                // 在此处你可以为 MarkedGeocacheAdapter 做自定义的修改，若有需要
-                // 例如改变点击事件，或显示额外的字段
-            }
         }
     }
 }

@@ -123,12 +123,19 @@ public class GeocacheSearchActivity extends AppCompatActivity {
         List<Geocache> safeFoundList = new ArrayList<>(foundGeocaches);
         List<Geocache> safeNotFoundList = new ArrayList<>(notFoundGeocaches);
 
+        // 更新 FoundGeocachesFragment
         FoundGeocachesFragment foundFragment = (FoundGeocachesFragment)
                 getSupportFragmentManager().findFragmentByTag("android:switcher:" + viewPager.getId() + ":0");
-
         if (foundFragment != null) {
-            Log.d("Data_Transfer", "Transferring foundAt: " + safeFoundList.get(0).getFoundAt());
             foundFragment.updateGeocaches(safeFoundList);
         }
+
+        // 更新 SearchedNotFoundGeocachesFragment
+        SearchedNotFoundGeocachesFragment notFoundFragment = (SearchedNotFoundGeocachesFragment)
+                getSupportFragmentManager().findFragmentByTag("android:switcher:" + viewPager.getId() + ":1");
+        if (notFoundFragment != null) {
+            notFoundFragment.updateGeocaches(safeNotFoundList);
+        }
     }
+
 }
