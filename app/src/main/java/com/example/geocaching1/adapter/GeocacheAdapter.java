@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -26,10 +27,18 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private Context context;
     private boolean hasMoreData = false; // 默认没有更多数据
     private boolean showLoading = false; // 控制是否显示加载视图
+    private OnItemLongClickListener longClickListener; // 直接使用自定义接口
 
     public GeocacheAdapter(Context context) {
         this.context = context;
         this.geocacheList = new ArrayList<>(); // 初始化为空列表
+    }
+    public interface OnItemLongClickListener {
+        boolean onItemLongClick(int position, Geocache geocache);
+    }
+
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        this.longClickListener = listener;
     }
 
     @Override
@@ -53,10 +62,18 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof GeocacheViewHolder && position < geocacheList.size()) {
-            Geocache geocache = geocacheList.get(position);
+            Geocache geocache = geocacheList.get(position);  // 确保 geocache 变量存在
             ((GeocacheViewHolder) holder).bind(geocache);
+
+            holder.itemView.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    return longClickListener.onItemLongClick(position, geocache);
+                }
+                return false;
+            });
         }
     }
+
 
     @Override
     public int getItemCount() {
