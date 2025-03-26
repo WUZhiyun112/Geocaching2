@@ -134,17 +134,25 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             tvGeocacheName.setText(geocache.getName());
             tvGeocacheType.setText("Type: " + geocache.getType());
             tvLocation.setText("Location: " + geocache.getLocation());
-            tvFoundAt.setText("Found At: " + geocache.getFormattedFoundAt());
             tvStatus.setText("Status: " + geocache.getStatus());
 
-            itemView.setOnClickListener(v -> {
-                Context context = v.getContext();
-                Intent intent = new Intent(context, GeocacheDetailActivity.class);
-                intent.putExtra("geocache", geocache);
-                context.startActivity(intent);
-            });
+            // Conditionally show or hide the "Found At" field
+            if ("Found it".equals(geocache.getStatus())) {
+                tvFoundAt.setVisibility(View.VISIBLE);
+                tvFoundAt.setText("Found At: " + geocache.getFormattedFoundAt());
+            } else {
+                tvFoundAt.setVisibility(View.GONE);  // Hide the "Found At" field if status is not "Found it"
+            }
+//
+//            itemView.setOnClickListener(v -> {
+//                Context context = v.getContext();
+//                Intent intent = new Intent(context, GeocacheDetailActivity.class);
+//                intent.putExtra("geocache", geocache);
+//                context.startActivity(intent);
+//            });
         }
     }
+
 
     public static class LoadingViewHolder extends RecyclerView.ViewHolder {
         ProgressBar progressBar;

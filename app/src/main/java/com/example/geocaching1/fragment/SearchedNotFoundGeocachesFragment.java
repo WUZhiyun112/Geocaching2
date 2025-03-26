@@ -97,14 +97,15 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
     }
     private void showStatusChangeDialog(Geocache geocache) {
         new AlertDialog.Builder(requireContext())
-                .setTitle("更改状态")
-                .setMessage("将状态从'Searched but not found'改为'Found it'?")
-                .setPositiveButton("确定", (dialog, which) -> {
+                .setTitle("Change Status")
+                .setMessage("Change the status from 'Searched but not found' to 'Found it'?")
+                .setPositiveButton("Confirm", (dialog, which) -> {
                     updateStatusToFound(geocache);
                 })
-                .setNegativeButton("取消", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
+
     private void updateStatusToFound(Geocache geocache) {
         // 修改为PUT请求
         String apiUrl = "http://192.168.147.72:8080/api/foundstatus/set";  // 如果需要更改为 PUT 方法，后端支持 PUT 请求
