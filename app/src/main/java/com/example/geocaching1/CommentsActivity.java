@@ -195,23 +195,33 @@ public class CommentsActivity extends AppCompatActivity {
 
 
     private Date parseCommentTime(String commentTime) {
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
-        try {
-            // Parse the commentTime string to a Date object
-            Date date = formatter.parse(commentTime);
-
-            // Use Calendar to handle the Date and convert it to your desired format
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(date);
-
-            // Return the Date object directly (no need to convert to LocalDateTime)
-            return calendar.getTime();
-        } catch (ParseException e) {
-            e.printStackTrace();
-            return new Date();  // Return current time if parsing fails
+        if (commentTime == null || commentTime.isEmpty()) {
+            return new Date();
         }
-    }
 
+        // 尝试常见的时间格式
+        String[] patterns = {
+                "yyyy-MM-dd'T'HH:mm:ss",    // ISO 8601
+                "yyyy-MM-dd HH:mm:ss",      // 标准格式
+                "yyyy-MM-dd HH:mm",         // 不带秒
+                "yyyy-MM-dd",               // 只有日期
+                "MM/dd/yyyy HH:mm:ss",      // 美国格式
+                "dd/MM/yyyy HH:mm:ss"       // 欧洲格式
+        };
+
+        for (String pattern : patterns) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat(pattern, Locale.getDefault());
+                sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // 如果时间是UTC
+                return sdf.parse(commentTime);
+            } catch (ParseException e) {
+                // 继续尝试下一种格式
+            }
+        }
+
+        Log.e("TimeParse", "无法解析时间: " + commentTime);
+        return new Date(); // 返回当前时间作为默认值
+    }
     private void saveComment(Comment comment) {
         String apiUrl = "http://192.168.147.72:8080/api/comments/add";
 

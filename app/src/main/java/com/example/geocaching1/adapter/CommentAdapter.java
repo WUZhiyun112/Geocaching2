@@ -49,8 +49,26 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
     }
 
     private String formatCommentTime(Date commentTime) {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
-        return sdf.format(commentTime);
+        if (commentTime == null) {
+            return "Unknown time";
+        }
+
+        // 使用相对时间显示（如"2小时前"）
+        long now = System.currentTimeMillis();
+        long diff = now - commentTime.getTime();
+
+        if (diff < 60 * 1000) {
+            return "Just now";
+        } else if (diff < 60 * 60 * 1000) {
+            long minutes = diff / (60 * 1000);
+            return minutes + " min ago";
+        } else if (diff < 24 * 60 * 60 * 1000) {
+            long hours = diff / (60 * 60 * 1000);
+            return hours + " hours ago";
+        } else {
+            SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy", Locale.getDefault());
+            return sdf.format(commentTime);
+        }
     }
 
     public static class CommentViewHolder extends RecyclerView.ViewHolder {
