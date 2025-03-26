@@ -63,7 +63,16 @@ public class SelfActivity extends AppCompatActivity {
 
 
         findViewById(R.id.settings_item).setOnClickListener(v -> {
-//            startActivity(new Intent(SelfActivity.this, SettingsActivity.class));
+            SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+            int userId = sharedPreferences.getInt("USER_ID", -1);
+            String jwtToken = sharedPreferences.getString("JWT_TOKEN", null);
+
+            if (userId == -1 || jwtToken == null) {
+                Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            startActivity(new Intent(SelfActivity.this, SettingsActivity.class));
         });
 
         findViewById(R.id.logout_item).setOnClickListener(v -> {
