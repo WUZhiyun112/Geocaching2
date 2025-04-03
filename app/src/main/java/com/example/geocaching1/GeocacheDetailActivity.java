@@ -16,6 +16,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.test.espresso.idling.CountingIdlingResource;
 
 import com.amap.api.maps.AMap;
 import com.amap.api.maps.MapView;
@@ -66,6 +67,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     private Button btnNavigate;
     private Button btnMark;
     private boolean isRegistering = false;
+    private CountingIdlingResource mIdlingResource = new CountingIdlingResource("GeocacheDetail");
 
 
     @Override
@@ -208,7 +210,9 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         checkMarkStatus(geocache, isMarked -> {
             if (isMarked == null) {
                 // 如果获取关注状态失败，可以显示错误提示
-                Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() ->
+                        Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败", Toast.LENGTH_SHORT).show()
+                );
             } else {
                 // 根据返回的关注状态更新按钮文本
                 if (isMarked) {
@@ -267,15 +271,18 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         editor.putBoolean("MARKED_" + geocacheCode, isMarked);  // 保存关注状态
         editor.apply();
     }
+
     private void toggleMark(Geocache geocache) {
         if (!isNetworkAvailable()) {
-            Toast.makeText(this, "网络不可用，请检查连接", Toast.LENGTH_SHORT).show();
+            runOnUiThread(() ->
+                    Toast.makeText(this, "网络不可用，请检查连接", Toast.LENGTH_SHORT).show());
             return;
         }
 
         // 防止重复操作
         if (isRegistering) {
-            Toast.makeText(this, "操作正在进行，请稍后重试！", Toast.LENGTH_SHORT).show();
+            runOnUiThread(() ->
+                    Toast.makeText(this, "操作正在进行，请稍后重试！", Toast.LENGTH_SHORT).show());
             return;
         }
 
@@ -291,7 +298,8 @@ public class GeocacheDetailActivity extends AppCompatActivity {
 
         // 如果未登录，则提示登录
         if (userId == -1 || token.isEmpty()) {
-            Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show();
+            runOnUiThread(() ->
+                    Toast.makeText(this, "请先登录", Toast.LENGTH_SHORT).show());
             isRegistering = false;  // 操作完成
             return;
         }
@@ -310,7 +318,8 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         checkMarkStatus(geocache, isMarked -> {
             if (isMarked == null) {
                 // 如果网络请求失败，标记操作完成
-                Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败，请稍后重试", Toast.LENGTH_SHORT).show();
+                runOnUiThread(() ->
+                        Toast.makeText(GeocacheDetailActivity.this, "获取关注状态失败，请稍后重试", Toast.LENGTH_SHORT).show());
                 isRegistering = false;
                 return;
             }
@@ -380,13 +389,15 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                                 btnMark.setBackgroundColor(Color.GRAY); // Gray background
                                 btnMark.setTextColor(Color.WHITE); // White text
                                 saveMarkStatus(geocacheCode, true);  // 保存关注状态
-                                Toast.makeText(GeocacheDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() ->
+                                        Toast.makeText(GeocacheDetailActivity.this, "关注成功", Toast.LENGTH_SHORT).show());
                             } else {
                                 btnMark.setText("Mark");
                                 btnMark.setBackgroundColor(Color.parseColor("#396034")); // Green background
                                 btnMark.setTextColor(Color.WHITE); // White text
                                 saveMarkStatus(geocacheCode, false);  // 保存取消关注状态
-                                Toast.makeText(GeocacheDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() ->
+                                        Toast.makeText(GeocacheDetailActivity.this, "取消关注成功", Toast.LENGTH_SHORT).show());
                             }
                             isRegistering = false;  // 操作完成
                         });
@@ -394,7 +405,8 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             try {
                                 String errorMessage = response.body() != null ? response.body().string() : "未知错误";
-                                Toast.makeText(GeocacheDetailActivity.this, "操作失败: " + errorMessage, Toast.LENGTH_SHORT).show();
+                                runOnUiThread(() ->
+                                        Toast.makeText(GeocacheDetailActivity.this, "操作失败: " + errorMessage, Toast.LENGTH_SHORT).show());
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -468,6 +480,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     interface MarkStatusCallback {
         void onResult(Boolean isMarked);
     }
+
     private void updateSearchStatus(String status) {
         // 获取用户信息
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -560,9 +573,6 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             });
         }
     }
-
-
-
 
 
     private void getFoundStatus() {
@@ -696,6 +706,22 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         if (mapView != null) {
             mapView.onSaveInstanceState(outState);
+        }
+    }
+
+    public CountingIdlingResource getCountingIdlingResource() {
+        return mIdlingResource;
+    }
+
+    // 在需要等待的操作前调用
+    private void beginNetworkRequest() {
+        mIdlingResource.increment();
+    }
+
+    // 在操作完成后调用
+    private void endNetworkRequest() {
+        if (!mIdlingResource.isIdleNow()) {
+            mIdlingResource.decrement();
         }
     }
 }
