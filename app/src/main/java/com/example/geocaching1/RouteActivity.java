@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.test.espresso.idling.CountingIdlingResource;
 
 import com.amap.api.location.AMapLocation;
 import com.amap.api.location.AMapLocationClient;
@@ -95,6 +96,7 @@ public class RouteActivity extends AppCompatActivity implements
     private String city;
     //地理编码搜索
     private GeocodeSearch geocodeSearch;
+    private CountingIdlingResource mIdlingResource = new CountingIdlingResource("RouteActivity");
     //解析成功标识码
     private static final int PARSE_SUCCESS_CODE = 1000;
     //定位地址
@@ -229,7 +231,7 @@ public class RouteActivity extends AppCompatActivity implements
     /**
      * 初始化定位
      */
-    private void initLocation() {
+    void initLocation() {
         //初始化定位
         try {
             mLocationClient = new AMapLocationClient(getApplicationContext());
@@ -819,5 +821,37 @@ public class RouteActivity extends AppCompatActivity implements
     public void setTravelMode(int travelMode) {
         this.TRAVEL_MODE = travelMode;
     }
+
+
+
+    public CountingIdlingResource getCountingIdlingResource() {
+        return mIdlingResource;
+    }
+
+    // 在异步操作开始前调用
+    private void incrementIdleResource() {
+        mIdlingResource.increment();
+    }
+
+    // 在异步操作完成后调用
+    private void decrementIdleResource() {
+        if (!mIdlingResource.isIdleNow()) {
+            mIdlingResource.decrement();
+        }
+    }
+
+    // 在需要的地方使用，例如：
+    private void someAsyncOperation() {
+        incrementIdleResource();
+        // 执行异步操作...
+        // 在回调中：
+        decrementIdleResource();
+    }
+    public LatLonPoint getEndPoint() {
+        return mEndPoint;
+    }
+
+
+
 
 }
