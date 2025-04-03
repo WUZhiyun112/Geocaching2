@@ -52,12 +52,41 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.foundation.android
     implementation libs.volley
+    implementation libs.espresso.intents
     testImplementation libs.junit
+    testImplementation libs.core
+    testImplementation libs.espresso.core
+    testImplementation libs.ext.junit
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
     implementation 'com.google.android.material:material:1.10.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'com.google.code.gson:gson:2.8.9'
+
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0' // 使用最新稳定版
+    testImplementation 'org.mockito:mockito-core:3.11.2'
+
+    // 如果你需要在Android测试中使用MockWebServer
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:4.12.0'\
+
+    // Mockito core library
+    testImplementation 'org.mockito:mockito-core:4.0.0'
+
+    // Mockito Android library (for Android-specific mocking)
+    androidTestImplementation 'org.mockito:mockito-android:4.0.0'
+
+    // JUnit 4 (if not already added)
+    testImplementation 'junit:junit:4.13.2'
+
+    // Espresso for UI testing (if not already added)
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    testImplementation 'org.mockito:mockito-inline:4.8.0' // 或者更高版本
+
+
+
+
+
 
 
 }

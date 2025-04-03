@@ -73,7 +73,7 @@ public class MyCommentsActivity extends AppCompatActivity {
             return;
         }
 
-        String apiUrl = "http://192.168.147.72:8080/api/comments/user/" + userId;
+        String apiUrl = "http://192.168.72.72:8080/api/comments/user/" + userId;
 
         Request request = new Request.Builder()
                 .url(apiUrl)

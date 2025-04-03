@@ -1,9 +1,5 @@
 package com.example.geocaching1.utils;
 
-
-import android.content.Context;
-import android.util.Log;
-
 import java.security.cert.CertificateException;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -14,45 +10,35 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 
 public class ApiClient {
+    public static String BASE_URL = "http://192.168.72.72"; // 默认值，会在测试中被覆盖
+
     public static OkHttpClient getUnsafeOkHttpClient() {
         try {
             // 创建一个不验证 SSL 证书的 TrustManager
             final TrustManager[] trustAllCerts = new TrustManager[] {
                     new X509TrustManager() {
                         @Override
-                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {}
+                        public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
 
                         @Override
-                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) throws CertificateException {}
+                        public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType) {}
 
                         @Override
                         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-                            return new java.security.cert.X509Certificate[] {};
+                            return new java.security.cert.X509Certificate[]{};
                         }
                     }
             };
 
-            // 创建 SSLContext，忽略证书验证
-            final SSLContext sslContext = SSLContext.getInstance("TLS");
+            SSLContext sslContext = SSLContext.getInstance("SSL");
             sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
 
-            // 创建不验证 Hostname 的 HostnameVerifier
-            HostnameVerifier allHostsValid = (hostname, session) -> true;
-
-            // 创建 OkHttpClient
-            OkHttpClient.Builder builder = new OkHttpClient.Builder();
-            builder.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustAllCerts[0]);
-            builder.hostnameVerifier(allHostsValid);
-
-            builder.followRedirects(false);    // 禁用HTTP重定向
-            builder.followSslRedirects(false); // 禁用SSL重定向
-//            builder.markRedirects(true);    // 允许 HTTP 重定向
-//            builder.markSslRedirects(true);
-
-            return builder.build();
+            return new OkHttpClient.Builder()
+                    .sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager)trustAllCerts[0])
+                    .hostnameVerifier((hostname, session) -> true)
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 }
-

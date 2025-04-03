@@ -35,7 +35,7 @@ import android.content.Intent;
 public class RegisterActivity extends AppCompatActivity {
 
 //    private static final String REGISTER_URL = "http://10.0.2.2:8080/api/users/register";
-private static final String REGISTER_URL = "http://192.168.147.72:8080/api/users/register";
+private static final String REGISTER_URL = "http://192.168.72.72:8080/api/users/register";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private boolean isRegistering = false; // 防止多次提交
@@ -65,8 +65,6 @@ private static final String REGISTER_URL = "http://192.168.147.72:8080/api/users
         // 设置注册按钮
         Button registerButton = findViewById(R.id.buttonRegister);
         registerButton.setOnClickListener(v -> {
-
-
             if (!isNetworkAvailable()) {
                 Toast.makeText(this, "网络不可用，请检查连接", Toast.LENGTH_SHORT).show();
                 return;
@@ -85,12 +83,27 @@ private static final String REGISTER_URL = "http://192.168.147.72:8080/api/users
             String username = usernameField.getText().toString().trim();
             String password = passwordField.getText().toString().trim();
 
+            // 输入验证
             if (email.isEmpty() || username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "所有字段必须填写", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "All fields must be filled out", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!isValidEmail(email)) {
+                emailField.setError("Please enter a valid email address");
+                return;
+            }
+            if (username.length() < 3) {
+                usernameField.setError("Username must be at least 3 characters long");
+                return;
+            }
+            if (password.length() < 8) {
+                passwordField.setError("Password must be at least 8 characters long");
                 return;
             }
 
-            isRegistering = true; // 标记正在注册，防止短时间内重复提交
+
+            // 防止重复提交
+            isRegistering = true;
             registerUser(email, username, password);
 
             // 1 秒后允许再次提交
@@ -98,6 +111,12 @@ private static final String REGISTER_URL = "http://192.168.147.72:8080/api/users
             handler.postDelayed(resetRegisteringFlag, 1000);
         });
     }
+
+    private boolean isValidEmail(String email) {
+        // 进行邮箱格式验证
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
 
     private void registerUser(String email, String username, String password) {
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();

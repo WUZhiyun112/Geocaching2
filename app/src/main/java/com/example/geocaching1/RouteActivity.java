@@ -63,7 +63,7 @@ public class RouteActivity extends AppCompatActivity implements
 
 
     private static final String TAG = "RouteActivity";
-    private ActivityRouteBinding binding;
+    ActivityRouteBinding binding;
     //地图控制器
     private AMap aMap = null;
     //声明AMapLocationClient类对象
@@ -444,7 +444,7 @@ public class RouteActivity extends AppCompatActivity implements
     /**
      * 开始路线搜索
      */
-    private void startRouteSearch() {
+    public void startRouteSearch() {
         //在地图上添加起点Marker
         aMap.addMarker(new MarkerOptions()
                 .position(MapUtil.convertToLatLng(mStartPoint))
@@ -748,7 +748,18 @@ public class RouteActivity extends AppCompatActivity implements
             showMsg("未找到相关地址信息");
         }
     }
+    // 在 RouteActivity.java 中添加这些方法
+    public void setAMapForTesting(AMap aMap) {
+        this.aMap = aMap;
+    }
 
+    public void setRouteSearchForTesting(RouteSearch routeSearch) {
+        this.routeSearch = routeSearch;
+    }
+
+    public void setGeocodeSearchForTesting(GeocodeSearch geocodeSearch) {
+        this.geocodeSearch = geocodeSearch;
+    }
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
@@ -790,4 +801,23 @@ public class RouteActivity extends AppCompatActivity implements
         }
         return false;
     }
+
+    public LatLonPoint getStartPoint() {
+        return mStartPoint;
+    }
+
+    public void setStartPoint(LatLonPoint startPoint) {
+        this.mStartPoint = startPoint;
+    }
+    public void setEndPoint(LatLonPoint endPoint) {
+        this.mEndPoint = endPoint;
+    }
+    public int getTravelMode() {
+        return TRAVEL_MODE;
+    }
+
+    public void setTravelMode(int travelMode) {
+        this.TRAVEL_MODE = travelMode;
+    }
+
 }
