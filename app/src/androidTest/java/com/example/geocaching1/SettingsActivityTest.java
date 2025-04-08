@@ -91,10 +91,10 @@ public class SettingsActivityTest {
         onView(withId(R.id.changeUsernameButton)).perform(click());
         Thread.sleep(2000); // Allow confirmation dialog to appear
 
-        onView(withText("确认修改用户名"))
+        onView(withText("Confirm Username Change"))
                 .check(matches(isDisplayed()));
 
-        onView(withText("确定")).perform(click());
+        onView(withText("Yes")).perform(click());
     }
 
     @Test
@@ -103,10 +103,10 @@ public class SettingsActivityTest {
         onView(withId(R.id.changeEmailButton)).perform(click());
         Thread.sleep(2000); // Allow confirmation dialog to appear
 
-        onView(withText("确认修改邮箱"))
+        onView(withText("Confirm Email Change"))
                 .check(matches(isDisplayed()));
 
-        onView(withText("确定")).perform(click());
+        onView(withText("Yes")).perform(click());
     }
 
     @Test
@@ -117,9 +117,9 @@ public class SettingsActivityTest {
         onView(withId(R.id.changePasswordButton)).perform(click());
         Thread.sleep(2000); // Allow confirmation dialog to appear
 
-        onView(withText("确认修改密码"))
+        onView(withText("Confirm Password Change"))
                 .check(matches(isDisplayed()));
 
-        onView(withText("确定")).perform(click());
+        onView(withText("Yes")).perform(click());
     }
 }

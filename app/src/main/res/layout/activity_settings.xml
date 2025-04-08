@@ -1,100 +1,243 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#FFFFFF"
+    tools:context=".SettingsActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- Back Button -->
+    <ImageButton
+        android:id="@+id/backButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Back"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:layout_marginTop="32dp"
+        android:text="Account Settings"
+        android:textColor="#396034"
+        android:textSize="28sp"
+        android:fontFamily="sans-serif-medium"
+        app:layout_constraintTop_toBottomOf="@id/backButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Change Username Section -->
-        <TextView
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        android:paddingHorizontal="16dp"
+        android:fillViewport="true"
+        app:layout_constraintTop_toBottomOf="@id/title"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Change Username"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            android:paddingBottom="32dp">
 
-        <EditText
-            android:id="@+id/newUsernameEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter new username"
-            android:inputType="text"/>
+            <!-- Change Username Section -->
+            <TextView
+                android:id="@+id/usernameTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Change Username"
+                android:textColor="#396034"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-        <Button
-            android:id="@+id/changeUsernameButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Update Username"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/usernameLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
+                app:boxStrokeColor="#68945c"
+                app:layout_constraintTop_toBottomOf="@id/usernameTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Change Email Section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Change Email"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/newUsernameEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="New username"
+                    android:inputType="text"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/newEmailEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter new email"
-            android:inputType="textEmailAddress"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/changeUsernameButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#68945c"
+                android:text="Update Username"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:cornerRadius="8dp"
+                app:layout_constraintTop_toBottomOf="@id/usernameLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-        <Button
-            android:id="@+id/changeEmailButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Update Email"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="24dp"/>
+            <!-- Change Email Section -->
+            <TextView
+                android:id="@+id/emailTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Change Email"
+                android:textColor="#396034"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintTop_toBottomOf="@id/changeUsernameButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-        <!-- Change Password Section -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Change Password"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/emailLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
+                app:boxStrokeColor="#68945c"
+                app:layout_constraintTop_toBottomOf="@id/emailTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
 
-        <EditText
-            android:id="@+id/currentPasswordEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Current password"
-            android:inputType="textPassword"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/newEmailEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="New email"
+                    android:inputType="textEmailAddress"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/newPasswordEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="New password"
-            android:inputType="textPassword"
-            android:layout_marginTop="8dp"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/changeEmailButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#68945c"
+                android:text="Update Email"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:cornerRadius="8dp"
+                app:layout_constraintTop_toBottomOf="@id/emailLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-        <EditText
-            android:id="@+id/confirmPasswordEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Confirm new password"
-            android:inputType="textPassword"
-            android:layout_marginTop="8dp"/>
+            <!-- Change Password Section -->
+            <TextView
+                android:id="@+id/passwordTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Change Password"
+                android:textColor="#396034"
+                android:textSize="18sp"
+                android:fontFamily="sans-serif-medium"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="8dp"
+                app:layout_constraintTop_toBottomOf="@id/changeEmailButton"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
-        <Button
-            android:id="@+id/changePasswordButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Update Password"
-            android:layout_marginTop="8dp"/>
-    </LinearLayout>
-</ScrollView>
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/currentPasswordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
+                app:boxStrokeColor="#68945c"
+                app:layout_constraintTop_toBottomOf="@id/passwordTitle"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/currentPasswordEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Current password"
+                    android:inputType="textPassword"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/newPasswordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
+                app:boxStrokeColor="#68945c"
+                app:layout_constraintTop_toBottomOf="@id/currentPasswordLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/newPasswordEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="New password"
+                    android:inputType="textPassword"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/confirmPasswordLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
+                app:boxStrokeColor="#68945c"
+                app:layout_constraintTop_toBottomOf="@id/newPasswordLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/confirmPasswordEditText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Confirm new password"
+                    android:inputType="textPassword"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/changePasswordButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="16dp"
+                android:backgroundTint="#68945c"
+                android:text="Update Password"
+                android:textColor="#FFFFFF"
+                android:textSize="16sp"
+                app:cornerRadius="8dp"
+                app:layout_constraintTop_toBottomOf="@id/confirmPasswordLayout"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_margin="12dp"
     android:clickable="true"
     android:focusable="true"
-    android:background="?android:attr/selectableItemBackground"
-    app:cardBackgroundColor="@android:color/white"
-    app:cardElevation="4dp"
-    app:cardCornerRadius="8dp"
-    tools:context=".MarkedGeocachesActivity">
+    android:foreground="?android:attr/selectableItemBackground"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="6dp"
+    app:cardBackgroundColor="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,41 +17,49 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Geocache Code -->
-        <TextView
-            android:id="@+id/geocache_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Geocache Code"
-            android:textColor="#68945c"
-            android:textSize="16sp" />
-
-        <!-- Geocache Name -->
+        <!-- 主标题：Geocache 名称 -->
         <TextView
             android:id="@+id/geocache_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Geocache Name"
-            android:textColor="#68945c"
-            android:textSize="18sp" />
+            android:textColor="#396034"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:fontFamily="sans-serif-medium" />
 
-        <!-- Geocache Type -->
+        <!-- 副标题：Geocache Code -->
+        <TextView
+            android:id="@+id/geocache_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Code: GC12345"
+            android:textColor="#4F7149"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif" />
+
+        <!-- 类型 -->
         <TextView
             android:id="@+id/geocache_type"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Geocache Type"
-            android:textColor="#68945c"
-            android:textSize="16sp" />
+            android:text="Type: Traditional"
+            android:textColor="#4F7149"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif" />
 
-        <!-- Geocache Location -->
+        <!-- 地点 -->
         <TextView
             android:id="@+id/geocache_location"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Location"
-            android:textColor="#68945c"
-            android:textSize="16sp" />
+            android:text="Location: Osaka Castle"
+            android:textColor="#4F7149"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"
+            android:fontFamily="sans-serif" />
 
     </LinearLayout>
 </androidx.cardview.widget.CardView>

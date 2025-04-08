@@ -104,46 +104,46 @@ public class SettingsActivity extends AppCompatActivity {
 
     private void showUsernameChangeDialog(String newUsername) {
         new AlertDialog.Builder(this)
-                .setTitle("确认修改用户名")
-                .setMessage("确定要将用户名从 \"" + currentUsername + "\" 修改为 \"" + newUsername + "\" 吗？")
-                .setPositiveButton("确定", (dialog, which) ->
+                .setTitle("Confirm Username Change")
+                .setMessage("Are you sure you want to change your username from \"" + currentUsername + "\" to \"" + newUsername + "\" ?")
+                .setPositiveButton("Yes", (dialog, which) ->
                         executeSecureRequest(
                                 "http://192.168.98.72:8080/api/users/change-username",
                                 createUsernameRequestBody(newUsername),
                                 this::handleUsernameSuccess
                         )
                 )
-                .setNegativeButton("取消", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
     private void showEmailChangeDialog(String newEmail) {
         new AlertDialog.Builder(this)
-                .setTitle("确认修改邮箱")
-                .setMessage("确定要将邮箱从 \"" + currentEmail + "\" 修改为 \"" + newEmail + "\" 吗？")
-                .setPositiveButton("确定", (dialog, which) ->
+                .setTitle("Confirm Email Change")
+                .setMessage("Are you sure you want to change your email from \"" + currentEmail + "\" to \"" + newEmail + "\" ?")
+                .setPositiveButton("Yes", (dialog, which) ->
                         executeSecureRequest(
                                 "http://192.168.98.72:8080/api/users/change-email",
                                 createEmailRequestBody(newEmail),
                                 this::handleEmailSuccess
                         )
                 )
-                .setNegativeButton("取消", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
     private void showPasswordChangeDialog(String currentPassword, String newPassword) {
         new AlertDialog.Builder(this)
-                .setTitle("确认修改密码")
-                .setMessage("确定要修改密码吗？")
-                .setPositiveButton("确定", (dialog, which) ->
+                .setTitle("Confirm Password Change")
+                .setMessage("Are you sure you want to change your password?")
+                .setPositiveButton("Yes", (dialog, which) ->
                         executeSecureRequest(
                                 "http://192.168.98.72:8080/api/users/change-password",
                                 createPasswordRequestBody(currentPassword, newPassword),
                                 this::handlePasswordSuccess
                         )
                 )
-                .setNegativeButton("取消", null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -264,6 +264,14 @@ public class SettingsActivity extends AppCompatActivity {
         }
         showToast(errorMsg);
     }
+    private void showSuccessDialog(String title, String message) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("OK", (dialog, which) -> forceLogout())
+                .setCancelable(false)
+                .show();
+    }
 
     private void handleUsernameSuccess(JSONObject response) throws JSONException {
         String newToken = response.getString("token");
@@ -273,8 +281,8 @@ public class SettingsActivity extends AppCompatActivity {
         currentUsername = newUsername;
 
         runOnUiThread(() -> {
-            showToast("用户名修改成功");
             newUsernameEditText.setText("");
+            showSuccessDialog("Username Changed", "Username updated successfully. Please login again.");
         });
     }
 
@@ -286,8 +294,8 @@ public class SettingsActivity extends AppCompatActivity {
         currentEmail = newEmail;
 
         runOnUiThread(() -> {
-            showToast("邮箱修改成功");
             newEmailEditText.setText("");
+            showSuccessDialog("Email Changed", "Email updated successfully. Please login again.");
         });
     }
 
@@ -296,9 +304,15 @@ public class SettingsActivity extends AppCompatActivity {
         tokenManager.updateToken(newToken);
 
         runOnUiThread(() -> {
-            showToast("密码修改成功");
             clearPasswordFields();
+            showSuccessDialog("Password Changed", "Password updated successfully. Please login again.");
         });
+    }
+
+    private void forceLogout() {
+        tokenManager.clear();
+        startActivity(new Intent(this, LoginActivity.class));
+        finish();
     }
 
     private void handleInvalidToken() {

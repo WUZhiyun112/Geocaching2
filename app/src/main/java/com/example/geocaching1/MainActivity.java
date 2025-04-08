@@ -532,12 +532,12 @@ public class MainActivity extends AppCompatActivity implements AMapLocationListe
             }
 
             // 手动添加一个标记（可选）
-            LatLng haidianLatLng = new LatLng(39.95933, 116.29845); // 北京海淀区
-            aMap.addMarker(new MarkerOptions()
-                    .position(haidianLatLng)
-                    .title("Haidian District")
-                    .snippet("Manually added point")
-                    .icon(customIcon)); // 使用自定义图标
+//            LatLng haidianLatLng = new LatLng(39.95933, 116.29845); // 北京海淀区
+//            aMap.addMarker(new MarkerOptions()
+//                    .position(haidianLatLng)
+//                    .title("Haidian District")
+//                    .snippet("Manually added point")
+//                    .icon(customIcon)); // 使用自定义图标
 
         } catch (Exception e) {
             e.printStackTrace();
