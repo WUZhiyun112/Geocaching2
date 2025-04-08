@@ -30,7 +30,7 @@ import java.io.IOException;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final String LOGIN_URL = "http://192.168.72.72:8080/api/users/login";
+    private static final String LOGIN_URL = "http://192.168.98.72:8080/api/users/login";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     EditText usernameField;

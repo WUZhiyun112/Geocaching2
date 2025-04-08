@@ -108,7 +108,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage("确定要将用户名从 \"" + currentUsername + "\" 修改为 \"" + newUsername + "\" 吗？")
                 .setPositiveButton("确定", (dialog, which) ->
                         executeSecureRequest(
-                                "http://192.168.72.72:8080/api/users/change-username",
+                                "http://192.168.98.72:8080/api/users/change-username",
                                 createUsernameRequestBody(newUsername),
                                 this::handleUsernameSuccess
                         )
@@ -123,7 +123,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage("确定要将邮箱从 \"" + currentEmail + "\" 修改为 \"" + newEmail + "\" 吗？")
                 .setPositiveButton("确定", (dialog, which) ->
                         executeSecureRequest(
-                                "http://192.168.72.72:8080/api/users/change-email",
+                                "http://192.168.98.72:8080/api/users/change-email",
                                 createEmailRequestBody(newEmail),
                                 this::handleEmailSuccess
                         )
@@ -138,7 +138,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage("确定要修改密码吗？")
                 .setPositiveButton("确定", (dialog, which) ->
                         executeSecureRequest(
-                                "http://192.168.72.72:8080/api/users/change-password",
+                                "http://192.168.98.72:8080/api/users/change-password",
                                 createPasswordRequestBody(currentPassword, newPassword),
                                 this::handlePasswordSuccess
                         )

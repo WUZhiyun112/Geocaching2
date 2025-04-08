@@ -30,8 +30,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private TextInputEditText newPasswordEditText, confirmNewPasswordEditText; // Add these
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String VERIFY_URL = "http://192.168.72.72:8080/api/users/verify";
-    private static final String UPDATE_PASSWORD_URL = "http://192.168.72.72:8080/api/users/forgot-password";
+    private static final String VERIFY_URL = "http://192.168.98.72:8080/api/users/verify";
+    private static final String UPDATE_PASSWORD_URL = "http://192.168.98.72:8080/api/users/forgot-password";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,18 +63,33 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         String newPassword = newPasswordEditText.getText().toString().trim();
         String confirmPassword = confirmNewPasswordEditText.getText().toString().trim();
 
-        if (newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(this, "Please enter and confirm your new password", Toast.LENGTH_SHORT).show();
+        // 清除之前的错误提示
+        newPasswordLayout.setError(null);
+        confirmNewPasswordLayout.setError(null);
+
+        if (newPassword.isEmpty()) {
+            newPasswordLayout.setError("Please enter a new password");
+            return;
+        }
+
+        if (newPassword.length() < 8) {
+            newPasswordLayout.setError("New password must be at least 8 characters long");
+            return;
+        }
+
+        if (confirmPassword.isEmpty()) {
+            confirmNewPasswordLayout.setError("Please confirm your new password");
             return;
         }
 
         if (!newPassword.equals(confirmPassword)) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            confirmNewPasswordLayout.setError("Passwords do not match");
             return;
         }
 
         updatePassword(newPassword);
     }
+
 
     private void onSubmitClicked() {
         String username = usernameEditText.getText().toString().trim();

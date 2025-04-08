@@ -109,7 +109,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
 
     private void updateStatusToFound(Geocache geocache) {
         // 修改为PUT请求
-        String apiUrl = "http://192.168.72.72:8080/api/foundstatus/set";  // 如果需要更改为 PUT 方法，后端支持 PUT 请求
+        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/set";  // 如果需要更改为 PUT 方法，后端支持 PUT 请求
 
         // 获取当前时间作为foundAt
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
@@ -164,7 +164,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
     }
     private void loadData() {
         // 重新加载数据的方法
-        String apiUrl = "http://192.168.72.72:8080/api/foundstatus/list?userId=" + userId;
+        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/list?userId=" + userId;
 
         Request request = new Request.Builder()
                 .url(apiUrl)
