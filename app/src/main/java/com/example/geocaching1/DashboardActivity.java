@@ -118,7 +118,7 @@ public class DashboardActivity extends AppCompatActivity {
         ArrayAdapter<String> distanceAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, distances);
         distanceAdapter.setDropDownViewResource(R.layout.dropdown_item);
         distanceSpinner.setAdapter(distanceAdapter);
-        distanceSpinner.setText(distances[0], false);
+//        distanceSpinner.setText(distances[0], false);
 
         // Set listeners
         typeSpinner.setOnItemClickListener((parent, view, position, id) -> {
@@ -227,40 +227,90 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void filterData() {
-        filteredGeocacheList.clear();
+//    private void filterData() {
+//        filteredGeocacheList.clear();
+//
+//        for (Geocache geocache : geocacheList) {
+//            boolean match = true;
+//
+//            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
+//                match = false;
+//            }
+//
+//            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
+//                match = false;
+//            }
+//
+//            if (match) {
+//                filteredGeocacheList.add(geocache);
+//            }
+//        }
+//
+//        // Update distances after filtering
+//        for (Geocache geocache : filteredGeocacheList) {
+//            double lat2 = geocache.getLatitude().doubleValue(); // Convert BigDecimal to double
+//            double lon2 = geocache.getLongitude().doubleValue(); // Convert BigDecimal to double
+//
+//            geocache.setDistanceInMeters(
+//                    calculateDistance(currentLatitude, currentLongitude, lat2, lon2)
+//            );
+//        }
+//
+//        // Optional: Sort by distance
+//        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
+//
+//        geocacheAdapter.notifyDataSetChanged();
+//    }
+private void filterData() {
+    filteredGeocacheList.clear();
 
-        for (Geocache geocache : geocacheList) {
-            boolean match = true;
-
-            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
-                match = false;
-            }
-
-            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
-                match = false;
-            }
-
-            if (match) {
-                filteredGeocacheList.add(geocache);
-            }
+    // Pre-calculate max distance in meters if selected
+    double maxDistanceMeters = -1;
+    if (selectedDistance != null && !selectedDistance.equals("All distances")) {
+        try {
+            String distanceValue = selectedDistance.replace("km", "").trim();
+            maxDistanceMeters = Double.parseDouble(distanceValue) * 1000;
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
         }
-
-        // Update distances after filtering
-        for (Geocache geocache : filteredGeocacheList) {
-            double lat2 = geocache.getLatitude().doubleValue(); // Convert BigDecimal to double
-            double lon2 = geocache.getLongitude().doubleValue(); // Convert BigDecimal to double
-
-            geocache.setDistanceInMeters(
-                    calculateDistance(currentLatitude, currentLongitude, lat2, lon2)
-            );
-        }
-
-        // Optional: Sort by distance
-        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
-
-        geocacheAdapter.notifyDataSetChanged();
     }
+
+    // Filter and calculate distances in one pass
+    for (Geocache geocache : geocacheList) {
+        // Type filter
+        if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
+            continue;
+        }
+
+        // Status filter
+        if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
+            continue;
+        }
+
+        // Calculate distance if we have location
+        if (currentLatitude != 0 && currentLongitude != 0) {
+            double lat2 = geocache.getLatitude().doubleValue();
+            double lon2 = geocache.getLongitude().doubleValue();
+            double distance = calculateDistance(currentLatitude, currentLongitude, lat2, lon2);
+
+            // Distance filter if applicable
+            if (maxDistanceMeters > 0 && distance > maxDistanceMeters) {
+                continue;
+            }
+
+            geocache.setDistanceInMeters(distance);
+        }
+
+        filteredGeocacheList.add(geocache);
+    }
+
+    // Sort by distance if we have location
+    if (currentLatitude != 0 && currentLongitude != 0) {
+        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
+    }
+
+    geocacheAdapter.notifyDataSetChanged();
+}
 
     public double getDistanceInMeters() {
         return distanceInMeters;

@@ -43,6 +43,7 @@ public class MarkedGeocachesActivity extends AppCompatActivity {
         adapter = new MarkedGeocacheAdapter(markedGeocaches, this);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
+        progressBar.setVisibility(View.GONE);
 
         // 获取用户信息
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -60,7 +61,7 @@ public class MarkedGeocachesActivity extends AppCompatActivity {
     }
 
     private void loadMarkedGeocaches(int userId, String jwtToken) {
-        progressBar.setVisibility(View.VISIBLE);
+        progressBar.setVisibility(View.GONE);
 
         String url = "http://192.168.98.72:8080/api/mark/list?userId=" + userId;
         RequestQueue queue = Volley.newRequestQueue(this);
