@@ -2,6 +2,7 @@ package com.example.geocaching1;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
@@ -111,25 +112,42 @@ public class GeocacheDetailActivityTest {
         onView(withId(R.id.map_view))
                 .check(matches(isDisplayed()));
     }
-
+//
+//    @Test
+//    public void testNavigationButton() {
+//        // Verify navigate button is present and clickable
+//        onView(withId(R.id.btn_navigate))
+//                .check(matches(isDisplayed()))
+//                .perform(click());
+//
+//        // Should launch RouteActivity - would need another test to verify
+//    }
+//
+//    @Test
+//    public void testMarkButton() {
+//        // Verify mark button is present
+//        onView(withId(R.id.btn_mark))
+//                .check(matches(isDisplayed()))
+//                .perform(click());
+//
+//        // Button state should change - would need mock API responses to fully test
+//    }
     @Test
     public void testNavigationButton() {
-        // Verify navigate button is present and clickable
+        // 先滚动到按钮位置
         onView(withId(R.id.btn_navigate))
+                .perform(scrollTo()) // 滚动到视图
                 .check(matches(isDisplayed()))
                 .perform(click());
-
-        // Should launch RouteActivity - would need another test to verify
     }
 
     @Test
     public void testMarkButton() {
-        // Verify mark button is present
+        // 先滚动到按钮位置
         onView(withId(R.id.btn_mark))
+                .perform(scrollTo()) // 滚动到视图
                 .check(matches(isDisplayed()))
                 .perform(click());
-
-        // Button state should change - would need mock API responses to fully test
     }
 
     @Test
