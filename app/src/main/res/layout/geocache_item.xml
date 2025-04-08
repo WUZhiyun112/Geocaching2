@@ -53,5 +53,14 @@
             android:text="Cache Location"
             android:textColor="#666666"
             android:textSize="14sp" />
+        <TextView
+            android:id="@+id/geocache_distance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="500 m"
+            android:textColor="@android:color/darker_gray"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"/>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

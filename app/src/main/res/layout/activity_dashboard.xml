@@ -89,6 +89,32 @@
 <!--            android:textStyle="bold"-->
 <!--            android:textColor="#396034" />-->
 
+<!--        <com.google.android.material.textfield.TextInputLayout-->
+<!--            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginEnd="1dp"-->
+<!--            android:layout_weight="1"-->
+<!--            app:endIconDrawable="@drawable/ic_arrow_down">-->
+
+<!--            <com.google.android.material.textfield.MaterialAutoCompleteTextView-->
+<!--                android:id="@+id/distance_spinner"-->
+<!--                android:layout_width="match_parent"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:backgroundTint="#68945c"-->
+<!--                android:entries="@array/distance_array"-->
+<!--                android:inputType="none"-->
+<!--                android:popupBackground="@android:color/white"-->
+<!--                android:text="distance"-->
+<!--                android:singleLine="true"-->
+<!--                android:textSize="10sp"-->
+<!--                app:paddingStart="0dp"-->
+<!--                app:paddingEnd="0dp"-->
+<!--                android:textStyle="bold"-->
+<!--                android:textColor="#396034"-->
+<!--                />-->
+<!--        </com.google.android.material.textfield.TextInputLayout>-->
+        <!-- Distance Filter -->
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="0dp"

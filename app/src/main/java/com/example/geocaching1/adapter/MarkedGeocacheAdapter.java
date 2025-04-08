@@ -18,6 +18,8 @@ import com.example.geocaching1.R;
 import com.example.geocaching1.SimpleDetailActivity;
 
 import java.util.List;
+import java.util.Locale;
+
 public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAdapter.MarkedGeocacheViewHolder> {
     private List<Geocache> geocacheList;
     private Context context;
@@ -171,7 +173,7 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
         }
 
         public static class GeocacheViewHolder extends RecyclerView.ViewHolder {
-            TextView nameTextView, typeTextView, statusTextView, locationTextView;
+            TextView nameTextView, typeTextView, statusTextView, locationTextView, distanceTextView;
 
             public GeocacheViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -179,6 +181,8 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
                 typeTextView = itemView.findViewById(R.id.typeTextView);
                 statusTextView = itemView.findViewById(R.id.statusTextView);
                 locationTextView = itemView.findViewById(R.id.locationTextView);
+                distanceTextView = itemView.findViewById(R.id.geocache_distance);
+
             }
 
             public void bind(Geocache geocache) {
@@ -195,6 +199,19 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
                     intent.putExtra("geocache", geocache); // 传递数据
                     context.startActivity(intent);
                 });
+                if (geocache.getDistanceInMeters() != null) {
+                    distanceTextView.setText(formatDistance(geocache.getDistanceInMeters()));
+                } else {
+                    distanceTextView.setText("Unknown distance");
+                }
+
+            }
+        }
+        private static String formatDistance(double distanceInMeters) {
+            if (distanceInMeters < 1000) {
+                return String.format(Locale.getDefault(), "%.0f m", distanceInMeters);
+            } else {
+                return String.format(Locale.getDefault(), "%.2f km", distanceInMeters / 1000);
             }
         }
 

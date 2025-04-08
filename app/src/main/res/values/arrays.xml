@@ -16,6 +16,7 @@
     </array>
 
     <array name="distance_array">
+        <item>Distances</item>
         <item>5km</item>
         <item>10km</item>
         <item>20km</item>

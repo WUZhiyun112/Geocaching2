@@ -22,6 +22,8 @@ public class Geocache implements Parcelable {
     private String size;         // 新增字段
     private String difficulty;   // 新增字段
     private String location;     // 新增字段
+    private double distanceInMeters;
+
 
     // 日期格式
     public static final SimpleDateFormat DATE_FORMATTER = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
@@ -262,6 +264,13 @@ public class Geocache implements Parcelable {
 
     public String getGeocacheCode() {
         return code;
+    }
+    public Double getDistanceInMeters() {
+        return distanceInMeters;
+    }
+
+    public void setDistanceInMeters(double distanceInMeters) {
+        this.distanceInMeters = distanceInMeters;
     }
 
 
