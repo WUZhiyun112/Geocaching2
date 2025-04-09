@@ -1,8 +1,12 @@
 package com.example.geocaching1.fragment;
 
+import static com.example.geocaching1.adapter.MarkedGeocacheAdapter.GeocacheAdapter.formatDistance;
+import static com.example.geocaching1.overlay.DrivingRouteOverlay.calculateDistance;
+
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,11 +24,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.geocaching1.R;
 import com.example.geocaching1.adapter.GeocacheAdapter;
 import com.example.geocaching1.model.Geocache;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,6 +47,12 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import androidx.core.content.ContextCompat;
+
+
 public class SearchedNotFoundGeocachesFragment extends Fragment {
     private static final String ARG_USER_ID = "user_id";
     private static final String ARG_JWT_TOKEN = "jwt_token";
@@ -49,6 +62,8 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
     private RecyclerView recyclerView;
     private TextView tvNoGeocache;
     private GeocacheAdapter adapter;
+    private FusedLocationProviderClient fusedLocationClient;
+
 
     public static SearchedNotFoundGeocachesFragment newInstance(int userId, String jwtToken) {
         SearchedNotFoundGeocachesFragment fragment = new SearchedNotFoundGeocachesFragment();
@@ -63,6 +78,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_geocache_list, container, false);
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext());
 
         recyclerView = view.findViewById(R.id.recyclerView);
         tvNoGeocache = view.findViewById(R.id.tv_no_geocache);
@@ -98,63 +114,76 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
     }
     private void showStatusChangeDialog(Geocache geocache) {
         new AlertDialog.Builder(requireContext())
-                .setTitle("Change Status")
-                .setMessage("Change the status from 'Searched but not found' to 'Found it'?")
-                .setPositiveButton("Confirm", (dialog, which) -> {
-                    updateStatusToFound(geocache);
+                .setTitle("Confirm Status Change")
+                .setMessage("Are you sure you want to mark this geocache as 'Found it'?")
+
+                .setPositiveButton("是", (dialog, which) -> {
+                    try {
+                        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                                != PackageManager.PERMISSION_GRANTED) {
+                            Toast.makeText(requireContext(), "定位权限未授权，无法获取当前位置", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        fusedLocationClient.getLastLocation()
+                                .addOnSuccessListener(location -> {
+                                    if (location != null) {
+                                        updateStatusToFound(geocache);
+                                    } else {
+                                        Toast.makeText(requireContext(), "无法获取当前位置", Toast.LENGTH_SHORT).show();
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(requireContext(), "定位失败：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    } catch (SecurityException e) {
+                        Toast.makeText(requireContext(), "获取位置异常：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton("否", null)
                 .show();
     }
 
+
     private void updateStatusToFound(Geocache geocache) {
-        // 修改为PUT请求
-        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/set";  // 如果需要更改为 PUT 方法，后端支持 PUT 请求
-
-        // 获取当前时间作为foundAt
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-        String foundAt = sdf.format(new Date());
-
-        // 创建请求参数
-        OkHttpClient client = new OkHttpClient();
-        RequestBody formBody = new FormBody.Builder()
-                .add("userId", String.valueOf(userId))
-                .add("geocacheCode", geocache.getCode())
-                .add("geocacheName", geocache.getName())
-                .add("geocacheType", geocache.getType())
-                .add("location", geocache.getLocation())
-                .add("myStatus", "Found it")  // 更新状态为 "Found it"
-                .add("foundAt", foundAt)  // 设置 foundAt 时间
-                .build();
-
-        // 使用PUT方法
-        Request request = new Request.Builder()
-                .url(apiUrl)
-                .header("Authorization", "Bearer " + jwtToken)
-                .put(formBody)  // 使用PUT方法
-                .build();
-
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(Call call, IOException e) {
-                requireActivity().runOnUiThread(() ->
-                        Toast.makeText(requireContext(), "更新失败", Toast.LENGTH_SHORT).show());
+        try {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                    != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(requireContext(), "定位权限未授权，无法获取当前位置", Toast.LENGTH_SHORT).show();
+                return;
             }
 
-            @Override
-            public void onResponse(Call call, Response response) throws IOException {
-                if (response.isSuccessful()) {
-                    requireActivity().runOnUiThread(() -> {
-                        Toast.makeText(requireContext(), "状态已更新", Toast.LENGTH_SHORT).show();
-                        loadData(); // 刷新数据
+            fusedLocationClient.getLastLocation()
+                    .addOnSuccessListener(location -> {
+                        if (location != null) {
+                            double userLatitude = location.getLatitude();
+                            double userLongitude = location.getLongitude();
+                            Log.d("Location", "User Location: " + userLatitude + ", " + userLongitude);
+
+                            double geocacheLatitude = geocache.getLatitude().doubleValue();
+                            double geocacheLongitude = geocache.getLongitude().doubleValue();
+
+                            double distance = calculateDistance(userLatitude, userLongitude, geocacheLatitude, geocacheLongitude);
+                            Log.d("Distance", "Distance to geocache: " + distance + " meters");
+
+                            if (distance <= 1000.0) {
+                                sendUpdateStatusRequest(geocache);
+
+                            } else {
+                                Toast.makeText(requireContext(), "You cannot mark the geocache as found if the distance to the geocache exceeds 1 km.", Toast.LENGTH_SHORT).show();
+                            }
+                        } else {
+                            Toast.makeText(requireContext(), "无法获取当前位置", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(requireContext(), "定位失败：" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     });
-                } else {
-                    requireActivity().runOnUiThread(() ->
-                            Toast.makeText(requireContext(), "更新失败", Toast.LENGTH_SHORT).show());
-                }
-            }
-        });
+        } catch (SecurityException e) {
+            Toast.makeText(requireContext(), "获取位置异常：" + e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
     }
+
 
 
     private List<Geocache> parseResponse(String responseData) {
@@ -162,6 +191,58 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
         Type listType = new TypeToken<List<Geocache>>() {}.getType();
         return gson.fromJson(responseData, listType);
     }
+    private void sendUpdateStatusRequest(Geocache geocache) {
+        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/set";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+        String foundAt = sdf.format(new Date());
+
+        OkHttpClient client = new OkHttpClient();
+        RequestBody formBody = new FormBody.Builder()
+                .add("userId", String.valueOf(userId))
+                .add("geocacheCode", geocache.getCode())
+                .add("geocacheName", geocache.getName())
+                .add("geocacheType", geocache.getType())
+                .add("location", geocache.getLocation())
+                .add("myStatus", "Found it")
+                .add("foundAt", foundAt)
+                .build();
+
+        Request request = new Request.Builder()
+                .url(apiUrl)
+                .header("Authorization", "Bearer " + jwtToken)
+                .put(formBody)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                requireActivity().runOnUiThread(() ->
+                        Toast.makeText(requireContext(), "Failed to update status", Toast.LENGTH_SHORT).show());
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    requireActivity().runOnUiThread(() -> {
+                        Toast.makeText(requireContext(), "Status updated successfully", Toast.LENGTH_SHORT).show();
+                        loadData(); // refresh data
+                    });
+                } else {
+                    requireActivity().runOnUiThread(() ->
+                            Toast.makeText(requireContext(), "Update failed", Toast.LENGTH_SHORT).show());
+                }
+            }
+        });
+    }
+    private String formatDistance(float distanceInMeters) {
+        if (distanceInMeters < 1000) {
+            return String.format(Locale.getDefault(), "%.0f meters", distanceInMeters);
+        } else {
+            return String.format(Locale.getDefault(), "%.2f km", distanceInMeters / 1000);
+        }
+    }
+
     private void loadData() {
         // 重新加载数据的方法
         String apiUrl = "http://192.168.98.72:8080/api/foundstatus/list?userId=" + userId;

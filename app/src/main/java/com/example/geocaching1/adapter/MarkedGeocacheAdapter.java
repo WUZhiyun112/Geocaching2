@@ -215,7 +215,7 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
 
             }
         }
-        private static String formatDistance(double distanceInMeters) {
+        public static String formatDistance(double distanceInMeters) {
             if (distanceInMeters < 1000) {
                 return String.format(Locale.getDefault(), "%.0f m", distanceInMeters);
             } else {

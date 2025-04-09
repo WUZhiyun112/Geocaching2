@@ -532,12 +532,14 @@ public class GeocacheDetailActivity extends AppCompatActivity {
 
                     if (distance > MAX_DISTANCE_METERS) {
                         runOnUiThread(() -> {
-                            Toast.makeText(GeocacheDetailActivity.this,
-                                    "You are still " + formatDistance(distance) + " away from the target. You must be within 1 km to mark it as found.",
-                                    Toast.LENGTH_LONG).show();
-                            // Don't update UI status here
+                            new AlertDialog.Builder(GeocacheDetailActivity.this)
+                                    .setTitle("Distance Too Far")
+                                    .setMessage("You are still " + formatDistance(distance) + " away from the target.\n" +
+                                            "You must be within 1 km to mark it as found.")
+                                    .setPositiveButton("OK", null)
+                                    .show();
                         });
-                    } else {
+                    }else {
                         // 距离合适，继续执行原来的更新状态逻辑
                         performStatusUpdate(status, true); // Pass true to allow UI update
                     }
@@ -646,9 +648,9 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     // 添加这个辅助方法格式化距离显示
     private String formatDistance(float meters) {
         if (meters < 1000) {
-            return String.format(Locale.getDefault(), "%.0f米", meters);
+            return String.format(Locale.getDefault(), "%.0fm", meters);
         } else {
-            return String.format(Locale.getDefault(), "%.1f公里", meters / 1000);
+            return String.format(Locale.getDefault(), "%.1fkm", meters / 1000);
         }
     }
 
