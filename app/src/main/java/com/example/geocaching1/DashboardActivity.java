@@ -162,6 +162,7 @@ public class DashboardActivity extends AppCompatActivity {
                     int totalItemCount = layoutManager.getItemCount();
                     int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
 
+                    
                     // 判断是否滚动到底部
                     if (!isLoading && hasMoreData) {
                         if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
