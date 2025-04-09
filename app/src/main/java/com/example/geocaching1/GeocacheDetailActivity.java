@@ -4,9 +4,11 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.test.espresso.idling.CountingIdlingResource;
 
 import com.amap.api.maps.AMap;
@@ -27,6 +30,9 @@ import com.amap.api.maps.model.CameraPosition;
 import com.amap.api.maps.CameraUpdateFactory;
 import com.example.geocaching1.model.Geocache;
 import com.example.geocaching1.utils.ApiClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationServices;
 
 import android.widget.Button;
 import android.widget.Toast;
@@ -57,6 +63,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import android.Manifest;
 
 public class GeocacheDetailActivity extends AppCompatActivity {
 
@@ -68,14 +75,17 @@ public class GeocacheDetailActivity extends AppCompatActivity {
     private Button btnMark;
     private boolean isRegistering = false;
     private CountingIdlingResource mIdlingResource = new CountingIdlingResource("GeocacheDetail");
-
+    private FusedLocationProviderClient fusedLocationClient;
+    private double currentLatitude = 0.0;
+    private double currentLongitude = 0.0;
+    private static final double MAX_DISTANCE_METERS = 1000; // 1公里
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_geocache_detail);
 
-
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         // 初始化视图
         tvName = findViewById(R.id.tv_name);
         tvType = findViewById(R.id.tv_type);
@@ -122,36 +132,24 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         });
 
         tvChangeFoundStatus.setOnClickListener(v -> {
-            // 获取 SharedPreferences
-//            SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-//            int userId = prefs.getInt("USER_ID", -1);  // 假设你将用户ID保存在 SharedPreferences 中
-//            String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
-//            String username = prefs.getString("USERNAME", "N/A");
-//
-//            Log.d("DetailActivity Oncreate", "userId: " + userId);  // 打印用户ID
-//            Log.d("DetailActivity Oncreate", "JWT Token: " + token);  // 打印JWT令牌
-//            Log.d("DetailActivity Oncreate", "usernane: " + username);  // 打印JWT令牌
-
-            // 状态选项
-            String[] options = {"Haven’t started", "Found it", "Searched but not found"};
+            String[] options = {"Haven't started", "Found it", "Searched but not found"};
 
             new AlertDialog.Builder(this)
                     .setTitle("Update Your Search Status")
                     .setItems(options, (dialog, which) -> {
                         String selectedStatus = options[which];
 
-                        // 如果用户选择了 "Haven’t started"，直接 return，不做任何操作
-                        if ("Haven’t started".equals(selectedStatus)) {
+                        if ("Haven't started".equals(selectedStatus)) {
                             return;
                         }
 
-                        // 更新 UI
-                        tvFoundStatus.setText("My Progress: " + selectedStatus);
+                        // Remove this line - we'll update UI only after server confirms
+                        // tvFoundStatus.setText("My Progress: " + selectedStatus);
 
-                        // 调用 API 更新状态
+                        // Call API to update status
                         updateSearchStatus(selectedStatus);
 
-                        // 保存状态已更新
+                        // This can stay as it's just a flag
                         SharedPreferences.Editor editor = prefs.edit();
                         editor.putBoolean("STATUS_UPDATED", true);
                         editor.apply();
@@ -263,7 +261,28 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             tvLocation.setText(locationText);
         }
     }
+    private void getCurrentLocation(LocationCallback callback) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            callback.onLocationResult(null);
+            return;
+        }
 
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(location -> {
+                    if (location != null) {
+                        currentLatitude = location.getLatitude();
+                        currentLongitude = location.getLongitude();
+                        callback.onLocationResult(location);
+                    } else {
+                        callback.onLocationResult(null);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Location", "Error getting location", e);
+                    callback.onLocationResult(null);
+                });
+    }
 
     private void saveMarkStatus(String geocacheCode, boolean isMarked) {
         SharedPreferences sharedPreferences = getSharedPreferences("AppPrefs", MODE_PRIVATE);
@@ -481,7 +500,56 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         void onResult(Boolean isMarked);
     }
 
+
+
+
     private void updateSearchStatus(String status) {
+        // 如果是"Found it"，需要检查距离
+        if ("Found it".equals(status)) {
+            getCurrentLocation(new LocationCallback() {
+                @Override
+                public void onLocationResult(Location location) {
+                    if (location == null) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(GeocacheDetailActivity.this,
+                                    "无法获取当前位置，请确保GPS已开启",
+                                    Toast.LENGTH_SHORT).show();
+                            // Don't update UI status here
+                        });
+                        return;
+                    }
+
+                    Geocache geocache = getIntent().getParcelableExtra("geocache");
+                    double geocacheLat = geocache.getLatitude().doubleValue();
+                    double geocacheLon = geocache.getLongitude().doubleValue();
+
+                    float[] results = new float[1];
+                    Location.distanceBetween(
+                            location.getLatitude(), location.getLongitude(),
+                            geocacheLat, geocacheLon, results);
+
+                    float distance = results[0];
+
+                    if (distance > MAX_DISTANCE_METERS) {
+                        runOnUiThread(() -> {
+                            Toast.makeText(GeocacheDetailActivity.this,
+                                    "您距离目标点还有" + formatDistance(distance) + "，必须在1公里内才能标记为找到",
+                                    Toast.LENGTH_LONG).show();
+                            // Don't update UI status here
+                        });
+                    } else {
+                        // 距离合适，继续执行原来的更新状态逻辑
+                        performStatusUpdate(status, true); // Pass true to allow UI update
+                    }
+                }
+            });
+        } else {
+            // 对于其他状态，直接更新
+            performStatusUpdate(status, true); // Pass true to allow UI update
+        }
+    }
+
+    private void performStatusUpdate(String status, boolean shouldUpdateUI) {
         // 获取用户信息
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
         int userId = prefs.getInt("USER_ID", -1);
@@ -535,7 +603,6 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                     .post(RequestBody.create(requestBody, MediaType.get("application/x-www-form-urlencoded")))
                     .build();
 
-            // 发起请求
             client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
@@ -550,13 +617,16 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                         runOnUiThread(() -> {
                             Toast.makeText(GeocacheDetailActivity.this, "状态更新成功", Toast.LENGTH_SHORT).show();
 
-                            // 更新 UI 上的 "My Progress" 状态
-                            TextView tvFoundStatus = findViewById(R.id.tv_found_status);
-                            tvFoundStatus.setText("My Progress: " + status);
+                            // Only update UI if allowed
+                            if (shouldUpdateUI) {
+                                // 更新 UI 上的 "My Progress" 状态
+                                TextView tvFoundStatus = findViewById(R.id.tv_found_status);
+                                tvFoundStatus.setText("My Progress: " + status);
 
-                            // 如果状态是 "Found it" 或 "Searched but not found"，立即隐藏 change 按钮
-                            if ("Found it".equals(status) || "Searched but not found".equals(status)) {
-                                findViewById(R.id.tv_change_found_status).setVisibility(View.GONE);
+                                // 如果状态是 "Found it" 或 "Searched but not found"，立即隐藏 change 按钮
+                                if ("Found it".equals(status) || "Searched but not found".equals(status)) {
+                                    findViewById(R.id.tv_change_found_status).setVisibility(View.GONE);
+                                }
                             }
                         });
                     } else {
@@ -573,8 +643,19 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             });
         }
     }
+    // 添加这个辅助方法格式化距离显示
+    private String formatDistance(float meters) {
+        if (meters < 1000) {
+            return String.format(Locale.getDefault(), "%.0f米", meters);
+        } else {
+            return String.format(Locale.getDefault(), "%.1f公里", meters / 1000);
+        }
+    }
 
-
+    // 添加这个回调接口
+    interface LocationCallback {
+        void onLocationResult(Location location);
+    }
     private void getFoundStatus() {
         // 获取用户信息
         SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
