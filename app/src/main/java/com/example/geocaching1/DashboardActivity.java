@@ -145,7 +145,7 @@ public class DashboardActivity extends AppCompatActivity {
         if (getIntent() != null && getIntent().hasExtra("geocacheList")) {
             geocacheList = getIntent().getParcelableArrayListExtra("geocacheList");
             if (geocacheList != null && !geocacheList.isEmpty()) {
-                filteredGeocacheList.addAll(geocacheList); // Load all data at once
+//                filteredGeocacheList.addAll(geocacheList);
                 geocacheAdapter.notifyDataSetChanged();
             } else {
                 Toast.makeText(this, "No geocache data available", Toast.LENGTH_SHORT).show();

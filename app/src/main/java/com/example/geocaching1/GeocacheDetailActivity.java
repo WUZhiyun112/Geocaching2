@@ -533,7 +533,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
                     if (distance > MAX_DISTANCE_METERS) {
                         runOnUiThread(() -> {
                             Toast.makeText(GeocacheDetailActivity.this,
-                                    "您距离目标点还有" + formatDistance(distance) + "，必须在1公里内才能标记为找到",
+                                    "You are still " + formatDistance(distance) + " away from the target. You must be within 1 km to mark it as found.",
                                     Toast.LENGTH_LONG).show();
                             // Don't update UI status here
                         });
