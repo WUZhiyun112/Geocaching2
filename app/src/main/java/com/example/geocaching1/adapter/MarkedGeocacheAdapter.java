@@ -147,9 +147,13 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
 
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-            if (holder instanceof GeocacheViewHolder) {
-                Geocache geocache = geocacheList.get(position);
-                ((GeocacheViewHolder) holder).bind(geocache);
+            try {
+                if (holder instanceof GeocacheViewHolder) {
+                    Geocache geocache = geocacheList.get(position); // 可能抛出IndexOutOfBounds
+                    ((GeocacheViewHolder) holder).bind(geocache);
+                }
+            } catch (IndexOutOfBoundsException e) {
+                Log.e("Adapter", "Position error: " + position, e);
             }
         }
 
@@ -159,12 +163,16 @@ public class MarkedGeocacheAdapter extends RecyclerView.Adapter<MarkedGeocacheAd
         }
 
 
-        public void updateData(List<Geocache> newGeocacheList, boolean isFirstPage) {
+        public void updateData(List<Geocache> newData, boolean isFirstPage) {
             if (isFirstPage) {
-                geocacheList.clear(); // 只有第一页才清空
+                int oldSize = geocacheList.size();
+                geocacheList.clear();
+                notifyItemRangeRemoved(0, oldSize); // 先通知移除旧数据
             }
-            geocacheList.addAll(newGeocacheList);
-            notifyItemRangeInserted(geocacheList.size() - newGeocacheList.size(), newGeocacheList.size());
+
+            int startPos = geocacheList.size();
+            geocacheList.addAll(newData);
+            notifyItemRangeInserted(startPos, newData.size()); // 再通知新增数据
         }
 
         public void setHasMoreData(boolean hasMoreData) {
