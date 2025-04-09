@@ -2,7 +2,6 @@ package com.example.geocaching1;
 
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -28,7 +27,6 @@ import java.util.List;
 import android.Manifest;
 import android.content.pm.PackageManager;
 
-
 public class DashboardActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
@@ -39,10 +37,6 @@ public class DashboardActivity extends AppCompatActivity {
     private Spinner typeSpinner;
     private Spinner statusSpinner;
     private Spinner distanceSpinner;
-    private int currentPage = 0; // 当前页码
-    private int pageSize = 10;   // 每页加载的数据量
-    private boolean isLoading = false; // 是否正在加载数据
-    private boolean hasMoreData = true; // 是否还有更多数据可以加载
 
     // 假设的筛选条件
     private String selectedType = null;
@@ -85,11 +79,7 @@ public class DashboardActivity extends AppCompatActivity {
                 }
             });
         }
-
-
     }
-
-
 
     /**
      * 初始化筛选条
@@ -118,7 +108,6 @@ public class DashboardActivity extends AppCompatActivity {
         ArrayAdapter<String> distanceAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, distances);
         distanceAdapter.setDropDownViewResource(R.layout.dropdown_item);
         distanceSpinner.setAdapter(distanceAdapter);
-//        distanceSpinner.setText(distances[0], false);
 
         // Set listeners
         typeSpinner.setOnItemClickListener((parent, view, position, id) -> {
@@ -137,8 +126,6 @@ public class DashboardActivity extends AppCompatActivity {
         });
     }
 
-
-
     /**
      * 初始化 RecyclerView
      */
@@ -149,64 +136,6 @@ public class DashboardActivity extends AppCompatActivity {
         // 初始化适配器
         geocacheAdapter = new MarkedGeocacheAdapter.GeocacheAdapter(DashboardActivity.this, filteredGeocacheList);
         recyclerView.setAdapter(geocacheAdapter);
-
-        // 添加滚动监听器
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                if (layoutManager != null) {
-                    int visibleItemCount = layoutManager.getChildCount();
-                    int totalItemCount = layoutManager.getItemCount();
-                    int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
-                    // 判断是否滚动到底部
-                    if (!isLoading && hasMoreData) {
-                        if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount
-                                && firstVisibleItemPosition >= 0
-                                && totalItemCount >= pageSize) {
-                            loadMoreData(); // 加载更多数据
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    private void loadMoreData() {
-        if (!hasMoreData || isLoading) return;
-
-        isLoading = true; // 标记正在加载
-        geocacheAdapter.notifyItemInserted(geocacheList.size()); // 显示加载中
-
-        new Handler().postDelayed(() -> {
-            List<Geocache> newData = fetchDataFromSource(currentPage + 1, pageSize);
-            if (newData != null && !newData.isEmpty()) {
-                currentPage++; // 只有成功获取数据才增加页码
-                geocacheAdapter.updateData(newData, false);
-            } else {
-                hasMoreData = false; // 标记无更多数据
-            }
-            isLoading = false;
-        }, 1000);
-    }
-
-
-    private List<Geocache> fetchDataFromSource(int page, int pageSize) {
-        // 这里模拟从数据源中获取数据
-        List<Geocache> data = new ArrayList<>();
-        int start = page * pageSize;
-        int end = Math.min(start + pageSize, geocacheList.size());
-
-        if (start < geocacheList.size()) {
-            for (int i = start; i < end; i++) {
-                data.add(geocacheList.get(i));
-            }
-        }
-
-        return data;
     }
 
     /**
@@ -216,8 +145,7 @@ public class DashboardActivity extends AppCompatActivity {
         if (getIntent() != null && getIntent().hasExtra("geocacheList")) {
             geocacheList = getIntent().getParcelableArrayListExtra("geocacheList");
             if (geocacheList != null && !geocacheList.isEmpty()) {
-                // 只加载第一页数据
-                filteredGeocacheList.addAll(fetchDataFromSource(currentPage, pageSize));
+                filteredGeocacheList.addAll(geocacheList); // Load all data at once
                 geocacheAdapter.notifyDataSetChanged();
             } else {
                 Toast.makeText(this, "No geocache data available", Toast.LENGTH_SHORT).show();
@@ -227,40 +155,6 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    //    private void filterData() {
-//        filteredGeocacheList.clear();
-//
-//        for (Geocache geocache : geocacheList) {
-//            boolean match = true;
-//
-//            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
-//                match = false;
-//            }
-//
-//            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
-//                match = false;
-//            }
-//
-//            if (match) {
-//                filteredGeocacheList.add(geocache);
-//            }
-//        }
-//
-//        // Update distances after filtering
-//        for (Geocache geocache : filteredGeocacheList) {
-//            double lat2 = geocache.getLatitude().doubleValue(); // Convert BigDecimal to double
-//            double lon2 = geocache.getLongitude().doubleValue(); // Convert BigDecimal to double
-//
-//            geocache.setDistanceInMeters(
-//                    calculateDistance(currentLatitude, currentLongitude, lat2, lon2)
-//            );
-//        }
-//
-//        // Optional: Sort by distance
-//        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
-//
-//        geocacheAdapter.notifyDataSetChanged();
-//    }
     private void filterData() {
         filteredGeocacheList.clear();
 
@@ -319,12 +213,12 @@ public class DashboardActivity extends AppCompatActivity {
     public void setDistanceInMeters(double distanceInMeters) {
         this.distanceInMeters = distanceInMeters;
     }
+
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
         float[] result = new float[1];
         Location.distanceBetween(lat1, lon1, lat2, lon2, result);
         return result[0]; // 单位：米
     }
-
 
     // 获取选中的类型
     private boolean[] getSelectedTypes() {
@@ -353,6 +247,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
         return selected;
     }
+
     private boolean[] getSelectedDistanace() {
         boolean[] selected = new boolean[distances.length]; // 根据类型数组的大小来设置
 
@@ -385,6 +280,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
         return -1;
     }
+
     private int getDistanceIndex(String distance) {
         for (int i = 0; i < distances.length; i++) {
             if (distances[i].equalsIgnoreCase(distance)) {
