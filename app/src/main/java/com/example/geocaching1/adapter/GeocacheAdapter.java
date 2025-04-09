@@ -77,8 +77,21 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
     @Override
     public int getItemCount() {
-        // 只有当有更多数据时才额外计算加载视图
-        return geocacheList.size() + (showLoading ? 1 : 0);
+        // 只在有更多数据且列表不为空时显示加载视图
+        return geocacheList.size() + (hasMoreData  ? 1 : 0);
+    }
+
+    public void setHasMoreData(boolean hasMoreData) {
+        boolean wasShowing = this.hasMoreData;
+        this.hasMoreData = hasMoreData;
+
+        if (wasShowing && !hasMoreData) {
+            // 移除加载视图
+            notifyItemRemoved(geocacheList.size());
+        } else if (!wasShowing && hasMoreData) {
+            // 添加加载视图
+            notifyItemInserted(geocacheList.size());
+        }
     }
 
     public void setData(List<Geocache> newGeocacheList) {
@@ -108,9 +121,7 @@ public class GeocacheAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
     }
 
-    public void setHasMoreData(boolean hasMoreData) {
-        this.hasMoreData = hasMoreData;
-    }
+
 
     public boolean isEmpty() {
         return geocacheList.isEmpty();

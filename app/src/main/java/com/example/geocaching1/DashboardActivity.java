@@ -38,7 +38,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private Spinner typeSpinner;
     private Spinner statusSpinner;
-    private Spinner distanceSpinner;
+
     private int currentPage = 0; // 当前页码
     private int pageSize = 10;   // 每页加载的数据量
     private boolean isLoading = false; // 是否正在加载数据
@@ -47,12 +47,10 @@ public class DashboardActivity extends AppCompatActivity {
     // 假设的筛选条件
     private String selectedType = null;
     private String selectedStatus = null;
-    private String selectedDistance = null;
 
     // 获取筛选条件数组
     private String[] types;
     private String[] statuses;
-    private String[] distances;
     private FusedLocationProviderClient fusedLocationClient;
     private double currentLatitude = 0.0;
     private double currentLongitude = 0.0;
@@ -81,7 +79,7 @@ public class DashboardActivity extends AppCompatActivity {
                     currentLatitude = location.getLatitude();
                     currentLongitude = location.getLongitude();
                     Log.d("Location", "Lat: " + currentLatitude + ", Lon: " + currentLongitude);
-                  filterData();
+                    filterData();
                 }
             });
         }
@@ -95,17 +93,22 @@ public class DashboardActivity extends AppCompatActivity {
      * 初始化筛选条
      */
     private void initFilterBar() {
-        // Initialize spinners
+        // 初始化 MaterialAutoCompleteTextView
         MaterialAutoCompleteTextView typeSpinner = findViewById(R.id.type_spinner);
         MaterialAutoCompleteTextView statusSpinner = findViewById(R.id.status_spinner);
-        MaterialAutoCompleteTextView distanceSpinner = findViewById(R.id.distance_spinner);
 
-        // Initialize arrays
+        // 初始化数组
         types = getResources().getStringArray(R.array.type_array);
         statuses = getResources().getStringArray(R.array.status_array);
-        distances = getResources().getStringArray(R.array.distance_array);
 
-        // Set up adapters
+        // 如果数组为空，设置默认值
+        if (types == null || statuses == null) {
+            Log.e("DashboardActivity", "Types or statuses array is null");
+            types = new String[]{"所有类型", "Traditional", "Virtual"};
+            statuses = new String[]{"所有状态", "Available", "Unavailable"};
+        }
+
+        // 初始化适配器
         ArrayAdapter<String> typeAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, types);
         typeAdapter.setDropDownViewResource(R.layout.dropdown_item);
         typeSpinner.setAdapter(typeAdapter);
@@ -114,13 +117,11 @@ public class DashboardActivity extends AppCompatActivity {
         statusAdapter.setDropDownViewResource(R.layout.dropdown_item);
         statusSpinner.setAdapter(statusAdapter);
 
-        // Add this for distance spinner
-        ArrayAdapter<String> distanceAdapter = new ArrayAdapter<>(this, R.layout.dropdown_item, distances);
-        distanceAdapter.setDropDownViewResource(R.layout.dropdown_item);
-        distanceSpinner.setAdapter(distanceAdapter);
-//        distanceSpinner.setText(distances[0], false);
+        // 设置默认选中项
+        typeSpinner.setText(types[0], false);
+        statusSpinner.setText(statuses[0], false);
 
-        // Set listeners
+        // 设置监听器
         typeSpinner.setOnItemClickListener((parent, view, position, id) -> {
             selectedType = position == 0 ? null : types[position];
             filterData();
@@ -130,13 +131,31 @@ public class DashboardActivity extends AppCompatActivity {
             selectedStatus = position == 0 ? null : statuses[position];
             filterData();
         });
-
-        distanceSpinner.setOnItemClickListener((parent, view, position, id) -> {
-            selectedDistance = position == 0 ? null : distances[position];
-            filterData();
-        });
     }
 
+    private void updateDistanceAndFilter() {
+        // 更新筛选后的数据
+        filterData();
+
+        // 遍历所有地理缓存并计算距离
+        for (Geocache geocache : filteredGeocacheList) {
+            geocache.setDistanceInMeters(
+                    calculateDistance(
+                            currentLatitude,
+                            currentLongitude,
+                            geocache.getLatitude().doubleValue(),
+                            geocache.getLongitude().doubleValue()
+                    )
+            );
+
+        }
+
+        // 根据距离进行排序
+        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
+
+        // 更新 RecyclerView
+        geocacheAdapter.notifyDataSetChanged();
+    }
 
 
     /**
@@ -227,90 +246,41 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-//    private void filterData() {
-//        filteredGeocacheList.clear();
-//
-//        for (Geocache geocache : geocacheList) {
-//            boolean match = true;
-//
-//            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
-//                match = false;
-//            }
-//
-//            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
-//                match = false;
-//            }
-//
-//            if (match) {
-//                filteredGeocacheList.add(geocache);
-//            }
-//        }
-//
-//        // Update distances after filtering
-//        for (Geocache geocache : filteredGeocacheList) {
-//            double lat2 = geocache.getLatitude().doubleValue(); // Convert BigDecimal to double
-//            double lon2 = geocache.getLongitude().doubleValue(); // Convert BigDecimal to double
-//
-//            geocache.setDistanceInMeters(
-//                    calculateDistance(currentLatitude, currentLongitude, lat2, lon2)
-//            );
-//        }
-//
-//        // Optional: Sort by distance
-//        Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
-//
-//        geocacheAdapter.notifyDataSetChanged();
-//    }
-private void filterData() {
-    filteredGeocacheList.clear();
+    private void filterData() {
+        filteredGeocacheList.clear();
 
-    // Pre-calculate max distance in meters if selected
-    double maxDistanceMeters = -1;
-    if (selectedDistance != null && !selectedDistance.equals("All distances")) {
-        try {
-            String distanceValue = selectedDistance.replace("km", "").trim();
-            maxDistanceMeters = Double.parseDouble(distanceValue) * 1000;
-        } catch (NumberFormatException e) {
-            e.printStackTrace();
-        }
-    }
+        for (Geocache geocache : geocacheList) {
+            boolean match = true;
 
-    // Filter and calculate distances in one pass
-    for (Geocache geocache : geocacheList) {
-        // Type filter
-        if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
-            continue;
-        }
-
-        // Status filter
-        if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
-            continue;
-        }
-
-        // Calculate distance if we have location
-        if (currentLatitude != 0 && currentLongitude != 0) {
-            double lat2 = geocache.getLatitude().doubleValue();
-            double lon2 = geocache.getLongitude().doubleValue();
-            double distance = calculateDistance(currentLatitude, currentLongitude, lat2, lon2);
-
-            // Distance filter if applicable
-            if (maxDistanceMeters > 0 && distance > maxDistanceMeters) {
-                continue;
+            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
+                match = false;
             }
 
-            geocache.setDistanceInMeters(distance);
+            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
+                match = false;
+            }
+
+            if (match) {
+                // 将BigDecimal转换为double
+                double lat2 = geocache.getLatitude().doubleValue();
+                double lon2 = geocache.getLongitude().doubleValue();
+
+                geocache.setDistanceInMeters(
+                        calculateDistance(currentLatitude, currentLongitude, lat2, lon2)
+                );
+
+                filteredGeocacheList.add(geocache);
+            }
         }
 
-        filteredGeocacheList.add(geocache);
-    }
-
-    // Sort by distance if we have location
-    if (currentLatitude != 0 && currentLongitude != 0) {
+        // Optional: Sort by distance
         Collections.sort(filteredGeocacheList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
+
+        geocacheAdapter.notifyDataSetChanged();
     }
 
-    geocacheAdapter.notifyDataSetChanged();
-}
+
+
 
     public double getDistanceInMeters() {
         return distanceInMeters;
@@ -353,18 +323,6 @@ private void filterData() {
         }
         return selected;
     }
-    private boolean[] getSelectedDistanace() {
-        boolean[] selected = new boolean[distances.length]; // 根据类型数组的大小来设置
-
-        if (selectedDistance!= null) {
-            // 选择特定的类型，设置对应的索引为 true
-            int index = getTypeIndex(selectedDistance);
-            if (index != -1) {
-                selected[index] = true;
-            }
-        }
-        return selected;
-    }
 
     // 获取类型索引
     private int getTypeIndex(String type) {
@@ -380,14 +338,6 @@ private void filterData() {
     private int getStatusIndex(String status) {
         for (int i = 0; i < statuses.length; i++) {
             if (statuses[i].equalsIgnoreCase(status)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-    private int getDistanceIndex(String distance) {
-        for (int i = 0; i < distances.length; i++) {
-            if (distances[i].equalsIgnoreCase(distance)) {
                 return i;
             }
         }
