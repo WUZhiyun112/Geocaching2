@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+
 public class Geocache implements Parcelable {
     private String code;
     private String name;
@@ -23,6 +24,7 @@ public class Geocache implements Parcelable {
     private String difficulty;   // 新增字段
     private String location;     // 新增字段
     private double distanceInMeters;
+
 
 
     // 日期格式
@@ -272,6 +274,22 @@ public class Geocache implements Parcelable {
     public void setDistanceInMeters(double distanceInMeters) {
         this.distanceInMeters = distanceInMeters;
     }
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Geocache geocache = (Geocache) o;
+
+        // 假设 code 是唯一标识
+        return code != null ? code.equals(geocache.code) : geocache.code == null;
+    }
+
+    @Override
+    public int hashCode() {
+        return code != null ? code.hashCode() : 0;
+    }
+
 
 
 }

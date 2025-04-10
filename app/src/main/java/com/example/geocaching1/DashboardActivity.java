@@ -21,12 +21,15 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
-
 public class DashboardActivity extends AppCompatActivity {
+
+    private static final long FILTER_DEBOUNCE_DELAY = 300; // 防抖延迟300毫秒
 
     private RecyclerView recyclerView;
     private MarkedGeocacheAdapter.GeocacheAdapter geocacheAdapter;
@@ -46,32 +49,52 @@ public class DashboardActivity extends AppCompatActivity {
     private double currentLongitude = 0.0;
     private double distanceInMeters;
     private boolean isFiltering = false;
+    private boolean isDataLoaded = false; // 新增标志位，防止重复加载
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        Log.d("DashboardActivity12321", "onCreate called");  // Log when the activity is created
+
         initFilterBar();
         initRecyclerView();
-        loadGeocacheData();
+
+        // 只有在数据未加载时才加载数据
+        if (!isDataLoaded) {
+            loadGeocacheData();
+            isDataLoaded = true;
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         } else {
-            fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-                if (location != null) {
-                    currentLatitude = location.getLatitude();
-                    currentLongitude = location.getLongitude();
-                    Log.d("Location", "Lat: " + currentLatitude + ", Lon: " + currentLongitude);
-                    filterData();
-                }
-            });
+            getLastLocation();
         }
     }
 
+    private void getLastLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("DashboardActivity12321", "Location permissions not granted");
+            return;
+        }
+        fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+            if (location != null) {
+                currentLatitude = location.getLatitude();
+                currentLongitude = location.getLongitude();
+                Log.d("Location", "Lat: " + currentLatitude + ", Lon: " + currentLongitude);
+                debouncedFilterData();
+            } else {
+                Log.w("DashboardActivity12321", "Location is null");
+            }
+        });
+    }
+
     private void initFilterBar() {
+        Log.d("DashboardActivity12321", "Initializing filter bar");  // Log filter bar initialization
+
         MaterialAutoCompleteTextView typeSpinner = findViewById(R.id.type_spinner);
         MaterialAutoCompleteTextView statusSpinner = findViewById(R.id.status_spinner);
         MaterialAutoCompleteTextView distanceSpinner = findViewById(R.id.distance_spinner);
@@ -91,21 +114,26 @@ public class DashboardActivity extends AppCompatActivity {
 
         typeSpinner.setOnItemClickListener((parent, view, position, id) -> {
             selectedType = position == 0 ? null : types[position];
-            filterData();
+            Log.d("Filter", "Selected Type: " + selectedType);  // Log the selected type
+            debouncedFilterData();
         });
 
         statusSpinner.setOnItemClickListener((parent, view, position, id) -> {
             selectedStatus = position == 0 ? null : statuses[position];
-            filterData();
+            Log.d("Filter", "Selected Status: " + selectedStatus);  // Log the selected status
+            debouncedFilterData();
         });
 
         distanceSpinner.setOnItemClickListener((parent, view, position, id) -> {
             selectedDistance = position == 0 ? null : distances[position];
-            filterData();
+            Log.d("Filter", "Selected Distance: " + selectedDistance);  // Log the selected distance
+            debouncedFilterData();
         });
     }
 
     private void initRecyclerView() {
+        Log.d("DashboardActivity12321", "Initializing RecyclerView");  // Log RecyclerView initialization
+
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         geocacheAdapter = new MarkedGeocacheAdapter.GeocacheAdapter(this, filteredGeocacheList);
@@ -113,59 +141,108 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void loadGeocacheData() {
+        Log.d("DashboardActivity12321", "Loading geocache data");
+
         if (getIntent() != null && getIntent().hasExtra("geocacheList")) {
-            geocacheList.clear();
             List<Geocache> newList = getIntent().getParcelableArrayListExtra("geocacheList");
+
             if (newList != null) {
-                geocacheList.addAll(newList);
-                Log.d("DataLoad", "Loaded items: " + geocacheList.size());
+                // 使用 HashSet 去重
+                Set<Geocache> uniqueGeocaches = new HashSet<>(newList);
+
+                // 更新 geocacheList
+                geocacheList.clear();
+                geocacheList.addAll(uniqueGeocaches); // 无重复数据
+
+                Log.d("DataLoad", "Loaded unique items: " + geocacheList.size());
+                debouncedFilterData();
+            } else {
+                Toast.makeText(this, "No data received", Toast.LENGTH_SHORT).show();
             }
-            filterData();
         } else {
             Toast.makeText(this, "Failed to load data", Toast.LENGTH_SHORT).show();
         }
     }
 
+
+    private void debouncedFilterData() {
+        Log.d("Filter", "Debounced filter triggered");  // Log when filtering is triggered
+
+        recyclerView.removeCallbacks(filterRunnable);  // Make sure to cancel previous runs
+        recyclerView.postDelayed(filterRunnable, FILTER_DEBOUNCE_DELAY);
+    }
+
+    private final Runnable filterRunnable = new Runnable() {
+        @Override
+        public void run() {
+            Log.d("Filter", "Running filter data method");  // Log when filter data method runs
+            filterData();
+        }
+    };
+
     private void filterData() {
-        if (isFiltering) return;
+        Log.d("Filter", "Filtering data...");  // Log when filterData is called
+
+        if (isFiltering) {
+            Log.d("Filter", "Already filtering, skipping");  // Log if already filtering
+            return;
+        }
         isFiltering = true;
 
         List<Geocache> tempFilteredList = new ArrayList<>();
         double maxDistanceMeters = -1;
-        if (selectedDistance != null && !selectedDistance.equals("All distances")) {
-            try {
+
+        try {
+            if (selectedDistance != null && !selectedDistance.equals("All distances")) {
                 String distanceValue = selectedDistance.replace("km", "").trim();
                 maxDistanceMeters = Double.parseDouble(distanceValue) * 1000;
-            } catch (NumberFormatException e) {
-                e.printStackTrace();
             }
+        } catch (NumberFormatException e) {
+            Log.e("FilterError", "Invalid distance format", e);
+            maxDistanceMeters = -1;
         }
 
         for (Geocache geocache : geocacheList) {
-            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) continue;
-            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) continue;
+            Log.d("Filter", "Checking geocache: " + geocache.getName());  // Log each geocache being checked
 
+            // Type filtering
+            if (selectedType != null && !geocache.getType().equalsIgnoreCase(selectedType)) {
+                continue;
+            }
+
+            // Status filtering
+            if (selectedStatus != null && !geocache.getStatus().equalsIgnoreCase(selectedStatus)) {
+                continue;
+            }
+
+            // Distance filtering
             if (currentLatitude != 0 && currentLongitude != 0) {
                 double lat2 = geocache.getLatitude().doubleValue();
                 double lon2 = geocache.getLongitude().doubleValue();
                 double distance = calculateDistance(currentLatitude, currentLongitude, lat2, lon2);
 
-                if (maxDistanceMeters > 0 && distance > maxDistanceMeters) continue;
+                if (maxDistanceMeters > 0 && distance > maxDistanceMeters) {
+                    continue;
+                }
                 geocache.setDistanceInMeters(distance);
             }
 
-            tempFilteredList.add(geocache);
+            if (!tempFilteredList.contains(geocache)) {
+                tempFilteredList.add(geocache);
+            }
         }
 
+        // Sort by distance
         if (currentLatitude != 0 && currentLongitude != 0) {
             Collections.sort(tempFilteredList, Comparator.comparingDouble(Geocache::getDistanceInMeters));
         }
 
-        filteredGeocacheList.clear();
+        filteredGeocacheList.clear();  // Clear old filtered list before updating
         filteredGeocacheList.addAll(tempFilteredList);
-        geocacheAdapter.notifyDataSetChanged();
+        geocacheAdapter.notifyDataSetChanged();  // Update RecyclerView
 
         isFiltering = false;
+        Log.d("FilterDebug", "Filter completed. Items: " + filteredGeocacheList.size());
     }
 
     private double calculateDistance(double lat1, double lon1, double lat2, double lon2) {
@@ -180,47 +257,5 @@ public class DashboardActivity extends AppCompatActivity {
 
     public void setDistanceInMeters(double distanceInMeters) {
         this.distanceInMeters = distanceInMeters;
-    }
-
-    private int getTypeIndex(String type) {
-        for (int i = 0; i < types.length; i++) {
-            if (types[i].equalsIgnoreCase(type)) return i;
-        }
-        return -1;
-    }
-
-    private int getStatusIndex(String status) {
-        for (int i = 0; i < statuses.length; i++) {
-            if (statuses[i].equalsIgnoreCase(status)) return i;
-        }
-        return -1;
-    }
-
-    private int getDistanceIndex(String distance) {
-        for (int i = 0; i < distances.length; i++) {
-            if (distances[i].equalsIgnoreCase(distance)) return i;
-        }
-        return -1;
-    }
-
-    private boolean[] getSelectedTypes() {
-        boolean[] selected = new boolean[types.length];
-        int index = getTypeIndex(selectedType);
-        if (index != -1) selected[index] = true;
-        return selected;
-    }
-
-    private boolean[] getSelectedStatuses() {
-        boolean[] selected = new boolean[statuses.length];
-        int index = getStatusIndex(selectedStatus);
-        if (index != -1) selected[index] = true;
-        return selected;
-    }
-
-    private boolean[] getSelectedDistances() {
-        boolean[] selected = new boolean[distances.length];
-        int index = getDistanceIndex(selectedDistance);
-        if (index != -1) selected[index] = true;
-        return selected;
     }
 }

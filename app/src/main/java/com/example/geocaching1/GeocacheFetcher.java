@@ -33,7 +33,7 @@ public class GeocacheFetcher {
             // 构建请求 URL
             String requestUrl = API_URL + "?consumer_key=" + API_KEY +
                     "&center=" + latitude + "|" + longitude +
-                    "&limit=50";
+                    "&limit=30";
 
             Log.d("GeocacheFetcher", "Request URL: " + requestUrl);
 

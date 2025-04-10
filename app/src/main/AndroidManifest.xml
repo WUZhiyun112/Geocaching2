@@ -42,9 +42,13 @@
         <activity
             android:name=".SelfActivity"
             android:exported="false" />
+<!--        <activity-->
+<!--            android:name=".DashboardActivity"-->
+<!--            android:exported="false" />-->
         <activity
             android:name=".DashboardActivity"
-            android:exported="false" />
+            android:launchMode="singleTop">
+        </activity>
         <activity
             android:name=".GeocacheDetailActivity"
             android:exported="false" />
