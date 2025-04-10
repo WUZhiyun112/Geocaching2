@@ -1,6 +1,8 @@
 package com.example.geocaching1;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.net.ConnectivityManager;
 import android.net.NetworkCapabilities;
 import android.net.NetworkInfo;
@@ -10,6 +12,8 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Toast;
@@ -35,26 +39,34 @@ import android.content.Intent;
 public class RegisterActivity extends AppCompatActivity {
 
 //    private static final String REGISTER_URL = "http://10.0.2.2:8080/api/users/register";
-private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/register";
+    private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/register";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
-    private boolean isRegistering = false; // 防止多次提交
-    private Handler handler = new Handler(Looper.getMainLooper()); // 处理防抖
-    private Runnable resetRegisteringFlag; // 延迟任务
-    private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (cm != null) {
-            NetworkCapabilities capabilities = cm.getNetworkCapabilities(cm.getActiveNetwork());
-            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-        }
-        return false;
-    }
-
+    private boolean isRegistering = false;
+    private Handler handler = new Handler(Looper.getMainLooper());
+    private Runnable resetRegisteringFlag;
+    private CheckBox privacyPolicyCheckBox;
+    private boolean privacyPolicyAccepted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
+
+        // 初始化隐私政策复选框
+        privacyPolicyCheckBox = findViewById(R.id.privacyPolicyCheckBox);
+        if (privacyPolicyCheckBox != null) {
+            privacyPolicyCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    if (isChecked) {
+                        showPrivacyPolicyDialog();
+                    } else {
+                        privacyPolicyAccepted = false;
+                    }
+                }
+            });
+        }
 
         // 设置返回按钮
         ImageButton backButton = findViewById(R.id.backButton);
@@ -72,6 +84,11 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
 
             if (isRegistering) {
                 Toast.makeText(this, "请勿重复提交，请稍后再试！", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (!privacyPolicyAccepted) {
+                Toast.makeText(this, "Please read and agree to the Privacy Policy.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -101,7 +118,6 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
                 return;
             }
 
-
             // 防止重复提交
             isRegistering = true;
             registerUser(email, username, password);
@@ -112,11 +128,42 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
         });
     }
 
-    private boolean isValidEmail(String email) {
-        // 进行邮箱格式验证
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    private void showPrivacyPolicyDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.privacy_policy_title)
+                .setMessage(R.string.privacy_policy_text)
+                .setPositiveButton(R.string.privacy_policy_accept, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        privacyPolicyAccepted = true;
+                        privacyPolicyCheckBox.setChecked(true);
+                        dialog.dismiss();
+                    }
+                })
+                .setNegativeButton(R.string.privacy_policy_decline, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        privacyPolicyAccepted = false;
+                        privacyPolicyCheckBox.setChecked(false);
+                        dialog.dismiss();
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (cm != null) {
+            NetworkCapabilities capabilities = cm.getNetworkCapabilities(cm.getActiveNetwork());
+            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+        }
+        return false;
+    }
+
+    private boolean isValidEmail(String email) {
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
 
     private void registerUser(String email, String username, String password) {
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
@@ -139,7 +186,6 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
         Log.d("RegisterActivity", "即将发送注册请求: " + request.toString());
         Log.d("RegisterActivity", "请求体: " + json.toString());
 
-
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
@@ -160,21 +206,17 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
                 Log.d("RegisterActivity", "响应体: " + responseBody);
 
                 if (statusCode == 200) {
-                    // 注册成功，跳转或提示
                     runOnUiThread(() -> {
                         Toast.makeText(RegisterActivity.this, "注册成功", Toast.LENGTH_SHORT).show();
-                        // 跳转到其他页面，或者清空字段等
                         Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                         startActivity(intent);
                     });
                 } else {
-                    // 注册失败，提示错误信息
                     runOnUiThread(() -> {
                         Toast.makeText(RegisterActivity.this, "注册失败: " + responseBody, Toast.LENGTH_SHORT).show();
                     });
                 }
             }
-
         });
     }
 
@@ -182,7 +224,7 @@ private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/
     protected void onDestroy() {
         super.onDestroy();
         if (resetRegisteringFlag != null) {
-            handler.removeCallbacks(resetRegisteringFlag); // 防止内存泄漏
+            handler.removeCallbacks(resetRegisteringFlag);
         }
     }
 }

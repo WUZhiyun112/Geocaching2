@@ -1,3 +1,51 @@
 <resources>
     <string name="app_name">GeocachingDemo</string>
+
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="privacy_policy_text">
+        <b>Last Updated: 9th April 2025</b>\n\n
+        Welcome to our Geocaching application! We take your privacy seriously. Please read this Privacy Policy carefully before using our services.\n\n
+
+        <b>1. Information We Collect</b>\n
+        When you register an account, we collect:\n
+        • Your email address\n
+        • Your username\n
+        • Your password (stored securely using encryption)\n\n
+
+        <b>2. How We Use Your Information</b>\n
+        The information we collect is used for:\n
+        • Creating and managing your Geocaching account\n
+        • Providing personalized services\n
+        • Improving application features and functionality\n
+        • Sending important notifications and updates\n\n
+
+        <b>3. Data Security</b>\n
+        We implement appropriate security measures including:\n
+        • SSL encryption for data transmission\n
+        • Password hashing for storage\n
+        • Regular security audits\n\n
+
+        <b>4. Information Sharing</b>\n
+        We are committed to:\n
+        • Never selling your personal information\n
+        • Only disclosing information when legally required\n\n
+
+        <b>5. Your Rights</b>\n
+        You have the right to:\n
+        • Access your account information\n
+        • Modify your personal details\n
+        • Delete your account\n\n
+
+        <b>6. Policy Changes</b>\n
+        We may update this policy periodically. Significant changes will be:\n
+        • Notified through in-app announcements\n
+        • Marked with a new "Last Updated" date\n\n
+
+        By continuing with registration, you acknowledge that you have read, understood, and agreed to all terms of this Privacy Policy.
+    </string>
+
+    <string name="privacy_policy_agree">I have read and agree to the <b>Privacy Policy</b></string>
+    <string name="privacy_policy_view_full">View Full Policy</string>
+    <string name="privacy_policy_accept">Agree &amp; Continue</string>
+    <string name="privacy_policy_decline">Decline</string>
 </resources>
