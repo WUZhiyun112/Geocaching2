@@ -109,13 +109,15 @@ public class SelfActivity extends AppCompatActivity {
         String username = prefs.getString("USERNAME", "N/A");
         String email = prefs.getString("EMAIL", "N/A");
         int userId = prefs.getInt("USER_ID", -1);  // 获取 userId，如果没有存储则默认为 -1
-        String jwtToken = prefs.getString("JWT_TOKEN", "");
+        String token = prefs.getString("JWT_TOKEN", "");
 
 
         // 打印调试信息
         Log.d("SelfActivity", "UserId: " + userId);
         Log.d("SelfActivity", "Username: " + username);
         Log.d("SelfActivity", "Email: " + email);
+
+        Log.d("UserInfoDebug", "Loaded token: " + token);
 
         // 更新 UI
         usernameTextView.setText(username);
