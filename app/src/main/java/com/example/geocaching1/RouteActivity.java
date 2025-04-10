@@ -101,6 +101,10 @@ public class RouteActivity extends AppCompatActivity implements
     private static final int PARSE_SUCCESS_CODE = 1000;
     //定位地址
     private String locationAddress;
+    static volatile BusPath sCachedBusPath;
+    static volatile DrivePath sCachedDrivePath;
+    static volatile WalkPath sCachedWalkPath;
+    static volatile RidePath sCachedRidePath;
     //起点地址转坐标标识   1
     private int tag = -1;
     @Override
@@ -548,10 +552,11 @@ public class RouteActivity extends AppCompatActivity implements
         binding.layBottom.setVisibility(View.VISIBLE);
         //跳转到路线详情页面
         binding.tvDetail.setOnClickListener(v -> {
+            sCachedBusPath = busPath;
             Intent intent = new Intent(RouteActivity.this,
                     RouteDetailActivity.class);
             intent.putExtra("type",3);
-            intent.putExtra("path", busPath);
+//            intent.putExtra("path", busPath);
             startActivity(intent);
         });
     }
@@ -599,10 +604,11 @@ public class RouteActivity extends AppCompatActivity implements
         binding.layBottom.setVisibility(View.VISIBLE);
         //跳转到路线详情页面
         binding.tvDetail.setOnClickListener(v -> {
+            sCachedDrivePath = drivePath;
             Intent intent = new Intent(RouteActivity.this,
                     RouteDetailActivity.class);
             intent.putExtra("type",2);
-            intent.putExtra("path", drivePath);
+//            intent.putExtra("path", drivePath);
             startActivity(intent);
         });
     }
@@ -653,10 +659,11 @@ public class RouteActivity extends AppCompatActivity implements
         binding.layBottom.setVisibility(View.VISIBLE);
         //跳转到路线详情页面
         binding.tvDetail.setOnClickListener(v -> {
+            sCachedWalkPath = walkPath;
             Intent intent = new Intent(RouteActivity.this,
                     RouteDetailActivity.class);
             intent.putExtra("type",0);
-            intent.putExtra("path", walkPath);
+//            intent.putExtra("path", walkPath);
             startActivity(intent);
         });
     }
@@ -672,7 +679,7 @@ public class RouteActivity extends AppCompatActivity implements
     public void onRideRouteSearched(final RideRouteResult rideRouteResult, int code) {
         aMap.clear();// 清理地图上的所有覆盖物
         if (code != AMapException.CODE_AMAP_SUCCESS) {
-            showMsg("错误码；" + code);
+            showMsg("The place is too far for riding, please choose another way." );
             return;
         }
         if (rideRouteResult == null || rideRouteResult.getPaths() == null) {
@@ -703,10 +710,11 @@ public class RouteActivity extends AppCompatActivity implements
         binding.tvTime.setText(des);
         binding.layBottom.setVisibility(View.VISIBLE);
         binding.tvDetail.setOnClickListener(v -> {
+            sCachedRidePath = ridePath;
             Intent intent = new Intent(RouteActivity.this,
                     RouteDetailActivity.class);
             intent.putExtra("type",1);
-            intent.putExtra("path", ridePath);
+//            intent.putExtra("path", ridePath);
             startActivity(intent);
         });
     }

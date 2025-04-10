@@ -2,6 +2,7 @@ package com.example.geocaching1;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -79,8 +80,16 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void busDetail(Intent intent) {
+        BusPath busPath = RouteActivity.sCachedBusPath; // 从静态变量获取
+        RouteActivity.sCachedBusPath = null; // 及时清除
+
+        if (busPath == null) {
+            Toast.makeText(this, "Route data expired", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding.toolbar.setTitle("Public Transport Route Planning");
-        BusPath busPath = intent.getParcelableExtra("path");
+//        BusPath busPath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) busPath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) busPath.getDistance());
         binding.tvTime.setText(dur + "(" + dis + ")");
@@ -132,8 +141,16 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void driveDetail(Intent intent) {
+        DrivePath drivePath = RouteActivity.sCachedDrivePath; // 从静态变量获取
+        RouteActivity.sCachedBusPath = null; // 及时清除
+
+        if (drivePath == null) {
+            Toast.makeText(this, "Route data expired", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding.toolbar.setTitle("Driving Route Planning");
-        DrivePath drivePath = intent.getParcelableExtra("path");
+//        DrivePath drivePath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) drivePath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) drivePath.getDistance());
         binding.tvTime.setText(dur + "(" + dis + ")");
@@ -146,8 +163,16 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void rideDetail(Intent intent) {
+        RidePath ridePath = RouteActivity.sCachedRidePath; // 从静态变量获取
+        RouteActivity.sCachedBusPath = null; // 及时清除
+
+        if (ridePath == null) {
+            Toast.makeText(this, "Route data expired", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding.toolbar.setTitle("Cycling Route Planning");
-        RidePath ridePath = intent.getParcelableExtra("path");
+//        RidePath ridePath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) ridePath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) ridePath.getDistance());
         binding.tvTime.setText(dur + "(" + dis + ")");
@@ -160,8 +185,16 @@ public class RouteDetailActivity extends AppCompatActivity {
      * @param intent
      */
     private void walkDetail(Intent intent) {
+        WalkPath walkPath = RouteActivity.sCachedWalkPath; // 从静态变量获取
+        RouteActivity.sCachedBusPath = null; // 及时清除
+
+        if (walkPath == null) {
+            Toast.makeText(this, "Route data expired", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
         binding.toolbar.setTitle("Walking Route Planning");
-        WalkPath walkPath = intent.getParcelableExtra("path");
+//        WalkPath walkPath = intent.getParcelableExtra("path");
         String dur = MapUtil.getFriendlyTime((int) walkPath.getDuration());
         String dis = MapUtil.getFriendlyLength((int) walkPath.getDistance());
         binding.tvTime.setText(dur + "(" + dis + ")");
