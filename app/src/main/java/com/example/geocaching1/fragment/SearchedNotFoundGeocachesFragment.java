@@ -26,6 +26,7 @@ import com.example.geocaching1.adapter.GeocacheAdapter;
 import com.example.geocaching1.model.Geocache;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -117,7 +118,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
                 .setTitle("Confirm Status Change")
                 .setMessage("Are you sure you want to mark this geocache as 'Found it'?")
 
-                .setPositiveButton("是", (dialog, which) -> {
+                .setPositiveButton("Yes", (dialog, which) -> {
                     try {
                         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION)
                                 != PackageManager.PERMISSION_GRANTED) {
@@ -140,7 +141,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
                         Toast.makeText(requireContext(), "获取位置异常：" + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 })
-                .setNegativeButton("否", null)
+                .setNegativeButton("No", null)
                 .show();
     }
 
@@ -166,13 +167,24 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
                             double distance = calculateDistance(userLatitude, userLongitude, geocacheLatitude, geocacheLongitude);
                             Log.d("Distance", "Distance to geocache: " + distance + " meters");
 
+//                            if (distance <= 1000.0) {
+//                                sendUpdateStatusRequest(geocache);
+//
+//                            } else {
+//                                Toast.makeText(requireContext(), "You cannot mark the geocache as found if the distance to the geocache exceeds 1 km.", Toast.LENGTH_SHORT).show();
+//                            }
+//                        }
                             if (distance <= 1000.0) {
                                 sendUpdateStatusRequest(geocache);
-
                             } else {
-                                Toast.makeText(requireContext(), "You cannot mark the geocache as found if the distance to the geocache exceeds 1 km.", Toast.LENGTH_SHORT).show();
+                                new MaterialAlertDialogBuilder(requireContext())
+                                        .setTitle("Too Far Away")
+                                        .setMessage(String.format("You're %.1f meters from the geocache (max 1000m allowed)", distance))
+                                        .setPositiveButton("Got It", null)
+                                        .show();
                             }
-                        } else {
+                        }
+                        else {
                             Toast.makeText(requireContext(), "无法获取当前位置", Toast.LENGTH_SHORT).show();
                         }
                     })

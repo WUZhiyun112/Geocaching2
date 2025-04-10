@@ -277,8 +277,12 @@ public class SettingsActivity extends AppCompatActivity {
         String newToken = response.getString("token");
         String newUsername = response.getString("username");
 
+        // 1. 更新本地存储
         tokenManager.updateTokenAndUserInfo(newToken, newUsername, null);
         currentUsername = newUsername;
+
+        // 2. 调用API更新评论中的显示名称
+        updateCommentsDisplayName(newUsername);
 
         runOnUiThread(() -> {
             newUsernameEditText.setText("");
@@ -286,6 +290,43 @@ public class SettingsActivity extends AppCompatActivity {
         });
     }
 
+    // 新增方法：更新评论显示名称
+    private void updateCommentsDisplayName(String newUsername) {
+        JSONObject requestBody = new JSONObject();
+        try {
+            requestBody.put("newUsername", newUsername);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.POST,
+                "http://192.168.98.72:8080/api/users/update-comments-displayname",
+                requestBody,
+                response -> {
+                    try {
+                        if (response.getBoolean("success")) {
+                            Log.d(TAG, "评论显示名称更新成功");
+                        } else {
+                            Log.e(TAG, "评论显示名称更新失败: " + response.getString("message"));
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                },
+                error -> Log.e(TAG, "更新评论显示名称请求失败", error)
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("Authorization", "Bearer " + tokenManager.getToken());
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        requestQueue.add(request);
+    }
     private void handleEmailSuccess(JSONObject response) throws JSONException {
         String newToken = response.getString("token");
         String newEmail = response.getString("email");
