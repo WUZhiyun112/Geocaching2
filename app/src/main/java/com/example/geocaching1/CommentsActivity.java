@@ -95,7 +95,7 @@ public class CommentsActivity extends AppCompatActivity {
             return;
         }
 
-        String apiUrl = "http://192.168.98.72:8080/api/comments/geocache/" + geocacheCode;
+        String apiUrl = "http://192.168.189.72:8080/api/comments/geocache/" + geocacheCode;
 
         Request request = new Request.Builder()
                 .url(apiUrl)
@@ -217,7 +217,7 @@ public class CommentsActivity extends AppCompatActivity {
         return new Date();
     }
     private void saveComment(Comment comment) {
-        String apiUrl = "http://192.168.98.72:8080/api/comments/add";
+        String apiUrl = "http://192.168.189.72:8080/api/comments/add";
 
 
         JSONObject json = new JSONObject();

@@ -10,7 +10,7 @@ import javax.net.ssl.X509TrustManager;
 import okhttp3.OkHttpClient;
 
 public class ApiClient {
-    public static String BASE_URL = "http://192.168.98.72"; // 默认值，会在测试中被覆盖
+    public static String BASE_URL = "http://192.168.189.72"; // 默认值，会在测试中被覆盖
 
     public static OkHttpClient getUnsafeOkHttpClient() {
         try {

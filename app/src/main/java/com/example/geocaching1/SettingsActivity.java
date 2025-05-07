@@ -4,34 +4,36 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 import com.example.geocaching1.utils.TokenManager;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.util.concurrent.TimeUnit;
+
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class SettingsActivity extends AppCompatActivity {
 
     private static final String TAG = "SettingsActivity";
     private static final int MAX_RETRY_COUNT = 1;
+    private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
 
     private TokenManager tokenManager;
-    private RequestQueue requestQueue;
+    private OkHttpClient okHttpClient;
     private EditText newUsernameEditText, newEmailEditText;
     private EditText currentPasswordEditText, newPasswordEditText, confirmPasswordEditText;
     private String currentUsername, currentEmail;
@@ -43,7 +45,13 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        requestQueue = Volley.newRequestQueue(this);
+        // 初始化OkHttpClient
+        okHttpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+
         tokenManager = TokenManager.getInstance(this);
         initViews();
         loadUserInfo();
@@ -108,7 +116,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to change your username from \"" + currentUsername + "\" to \"" + newUsername + "\" ?")
                 .setPositiveButton("Yes", (dialog, which) ->
                         executeSecureRequest(
-                                "http://192.168.98.72:8080/api/users/change-username",
+                                "http://192.168.189.72:8080/api/users/change-username",
                                 createUsernameRequestBody(newUsername),
                                 this::handleUsernameSuccess
                         )
@@ -123,7 +131,7 @@ public class SettingsActivity extends AppCompatActivity {
                 .setMessage("Are you sure you want to change your email from \"" + currentEmail + "\" to \"" + newEmail + "\" ?")
                 .setPositiveButton("Yes", (dialog, which) ->
                         executeSecureRequest(
-                                "http://192.168.98.72:8080/api/users/change-email",
+                                "http://192.168.189.72:8080/api/users/change-email",
                                 createEmailRequestBody(newEmail),
                                 this::handleEmailSuccess
                         )
@@ -136,16 +144,18 @@ public class SettingsActivity extends AppCompatActivity {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm Password Change")
                 .setMessage("Are you sure you want to change your password?")
-                .setPositiveButton("Yes", (dialog, which) ->
-                        executeSecureRequest(
-                                "http://192.168.98.72:8080/api/users/change-password",
-                                createPasswordRequestBody(currentPassword, newPassword),
-                                this::handlePasswordSuccess
-                        )
-                )
+                .setPositiveButton("Yes", (dialog, which) -> {
+                    // 调用 executeSecureRequest，传入正确的请求体类型
+                    executeSecureRequest(
+                            "http://192.168.189.72:8080/api/users/change-password",
+                            createPasswordRequestBody(currentPassword, newPassword),
+                            this::handlePasswordSuccess
+                    );
+                })
                 .setNegativeButton("Cancel", null)
                 .show();
     }
+
 
     private void executeSecureRequest(String url, JSONObject requestBody,
                                       SuccessHandler successHandler) {
@@ -168,7 +178,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         isRequestInProgress = true;
         setAllChangeButtonsEnabled(false);
-        retryCount = 0; // 重置重试计数器
+        retryCount = 0;
 
         final String currentToken = tokenManager.getToken();
         if (currentToken == null || !tokenManager.verifyToken(currentToken)) {
@@ -176,53 +186,62 @@ public class SettingsActivity extends AppCompatActivity {
             return;
         }
 
-        makeApiRequest(url, requestBody, successHandler, errorHandler, currentToken);
-    }
+        RequestBody body = RequestBody.create(requestBody.toString(), JSON);
 
-    private void makeApiRequest(String url, JSONObject requestBody,
-                                SuccessHandler successHandler,
-                                ErrorHandler errorHandler,
-                                String token) {
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                requestBody,
-                response -> {
-                    isRequestInProgress = false;
-                    try {
-                        Log.d(TAG, "API响应: " + response);
-                        if (response.getBoolean("success")) {
-                            successHandler.handle(response);
-                        } else {
-                            handleErrorResponse(response);
-                        }
-                    } catch (JSONException e) {
-                        handleParseError();
-                    } finally {
-                        runOnUiThread(() -> setAllChangeButtonsEnabled(true));
-                    }
-                },
-                error -> {
-                    isRequestInProgress = false;
-                    Log.e(TAG, "请求错误: ", error);
-                    errorHandler.handle(error);
-                    runOnUiThread(() -> setAllChangeButtonsEnabled(true));
-                }) {
+        Request request = new Request.Builder()
+                .url(url)
+                .post(body)
+                .addHeader("Authorization", "Bearer " + currentToken)
+                .addHeader("Content-Type", "application/json")
+                .build();
+
+        okHttpClient.newCall(request).enqueue(new Callback() {
             @Override
-            public Map<String, String> getHeaders() {
-                Map<String, String> headers = new HashMap<>();
-                headers.put("Authorization", "Bearer " + token);
-                headers.put("Content-Type", "application/json");
-                return headers;
+            public void onFailure(Call call, IOException e) {
+                runOnUiThread(() -> {
+                    isRequestInProgress = false;
+                    setAllChangeButtonsEnabled(true);
+                    errorHandler.handle(e);
+                });
             }
-        };
 
-        requestQueue.add(request);
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try {
+                    String responseBody = response.body().string();
+                    JSONObject jsonResponse = new JSONObject(responseBody);
+
+                    runOnUiThread(() -> {
+                        isRequestInProgress = false;
+                        setAllChangeButtonsEnabled(true);
+
+                        if (response.isSuccessful()) {
+                            try {
+                                successHandler.handle(jsonResponse);
+                            } catch (JSONException e) {
+                                handleParseError();
+                            }
+                        } else {
+                            handleErrorResponse(jsonResponse);
+                        }
+                    });
+                } catch (Exception e) {
+                    runOnUiThread(() -> {
+                        isRequestInProgress = false;
+                        setAllChangeButtonsEnabled(true);
+                        handleParseError();
+                    });
+                }
+            }
+        });
     }
 
-    private boolean isAuthFailure(VolleyError error) {
-        return error instanceof AuthFailureError ||
-                (error.networkResponse != null && error.networkResponse.statusCode == 401);
+    private boolean isAuthFailure(Exception error) {
+        if (error instanceof IOException) {
+            String message = error.getMessage();
+            return message != null && message.contains("HTTP 401");
+        }
+        return false;
     }
 
     private void handleTokenRefreshAndRetry(String url, JSONObject requestBody,
@@ -238,40 +257,40 @@ public class SettingsActivity extends AppCompatActivity {
         tokenManager.refreshToken(new TokenManager.RefreshCallback() {
             @Override
             public void onSuccess(String newToken) {
-                makeApiRequest(url, requestBody, successHandler, error -> {
+                executeSecureRequest(url, requestBody, successHandler, error -> {
                     if (isAuthFailure(error)) {
                         handleInvalidToken();
                     } else {
                         handleDefaultError(error);
                     }
-                }, newToken);
+                });
             }
 
             @Override
             public void onFailure() {
-                handleInvalidToken();
+                runOnUiThread(() -> {
+                    handleInvalidToken();
+                });
             }
         });
     }
 
-    private void handleDefaultError(VolleyError error) {
+    private void handleDefaultError(Exception error) {
         String errorMsg = "网络错误";
-        if (error.networkResponse != null) {
-            errorMsg = "HTTP " + error.networkResponse.statusCode;
-            if (error.networkResponse.data != null) {
-                errorMsg += ": " + new String(error.networkResponse.data);
-            }
+        if (error instanceof IOException) {
+            errorMsg = error.getMessage();
         }
         showToast(errorMsg);
     }
-    private void showSuccessDialog(String title, String message) {
-        new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setMessage(message)
-                .setPositiveButton("OK", (dialog, which) -> forceLogout())
-                .setCancelable(false)
-                .show();
-    }
+
+//    private void showSuccessDialog(String title, String message) {
+//        new AlertDialog.Builder(this)
+//                .setTitle(title)
+//                .setMessage(message)
+//                .setPositiveButton("OK", (dialog, which) -> forceLogout())
+//                .setCancelable(false)
+//                .show();
+//    }
 
     private void handleUsernameSuccess(JSONObject response) throws JSONException {
         String newToken = response.getString("token");
@@ -282,21 +301,52 @@ public class SettingsActivity extends AppCompatActivity {
 
         runOnUiThread(() -> {
             newUsernameEditText.setText("");
-            showSuccessDialog("Username Changed", "Username updated successfully. Please login again.");
+            showSuccessDialog(
+                    "用户名修改成功",
+                    "安全提示：用户名是重要账户凭证\n请重新登录以继续使用",
+                    true // 强制登出
+            );
         });
     }
 
+//    private void handleEmailSuccess(JSONObject response) throws JSONException {
+//        String newToken = response.getString("token");
+//        String newEmail = response.getString("email");
+//
+//        tokenManager.updateTokenAndUserInfo(newToken, null, newEmail);
+//        currentEmail = newEmail;
+//
+//        runOnUiThread(() -> {
+//            newEmailEditText.setText("");
+//            showSuccessDialog("Email Changed", "Email updated successfully. Please login again.");
+//        });
+//    }
+
+    // 修改handleEmailSuccess方法
+// 修改 handleEmailSuccess 方法
     private void handleEmailSuccess(JSONObject response) throws JSONException {
-        String newToken = response.getString("token");
-        String newEmail = response.getString("email");
-
-        tokenManager.updateTokenAndUserInfo(newToken, null, newEmail);
-        currentEmail = newEmail;
-
         runOnUiThread(() -> {
             newEmailEditText.setText("");
-            showSuccessDialog("Email Changed", "Email updated successfully. Please login again.");
+            showSuccessDialog(
+                    "邮箱修改成功",
+                    "安全提示：邮箱是重要账户凭证\n请重新登录以继续使用",
+                    true // 强制登出
+            );
         });
+    }
+
+    // 增强 showSuccessDialog
+    private void showSuccessDialog(String title, String message, boolean forceLogout) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("确定", (dialog, which) -> {
+                    if (forceLogout) {
+                        forceLogout();
+                    }
+                })
+                .setCancelable(false)
+                .show();
     }
 
     private void handlePasswordSuccess(JSONObject response) throws JSONException {
@@ -305,24 +355,66 @@ public class SettingsActivity extends AppCompatActivity {
 
         runOnUiThread(() -> {
             clearPasswordFields();
-            showSuccessDialog("Password Changed", "Password updated successfully. Please login again.");
+            showSuccessDialog(
+                    "密码修改成功",
+                    "安全提示：密码是重要账户凭证\n请重新登录以继续使用",
+                    true // 强制登出
+            );
         });
     }
 
     private void forceLogout() {
-        tokenManager.clear();
-        startActivity(new Intent(this, LoginActivity.class));
-        finish();
+        tokenManager.clear(); // 清除 token 等登录信息
+
+        Intent intent = getBaseContext().getPackageManager()
+                .getLaunchIntentForPackage(getBaseContext().getPackageName());
+
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+            // 杀掉当前进程，确保彻底重启
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(0);
+        } else {
+            // fallback：无法获取启动 Intent，退回登录页
+            Intent fallbackIntent = new Intent(this, LoginActivity.class);
+            fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(fallbackIntent);
+            finish();
+        }
     }
+
 
     private void handleInvalidToken() {
         runOnUiThread(() -> {
-            showToast("会话已过期，请重新登录");
+            showToast("会话已过期");
+
+            // 清除 token 等登录信息
             tokenManager.clear();
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+
+            // 获取启动 Intent（等同于 Launcher 启动）
+            Intent intent = getBaseContext().getPackageManager()
+                    .getLaunchIntentForPackage(getBaseContext().getPackageName());
+
+            if (intent != null) {
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+
+                // 杀掉当前进程，确保彻底重启
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(0);
+            } else {
+                // fallback：无法获取启动 Intent，退回登录页
+                Intent fallbackIntent = new Intent(this, LoginActivity.class);
+                fallbackIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(fallbackIntent);
+                finish();
+            }
         });
     }
+
+
 
     private void setAllChangeButtonsEnabled(boolean enabled) {
         findViewById(R.id.changeUsernameButton).setEnabled(enabled);
@@ -370,22 +462,24 @@ public class SettingsActivity extends AppCompatActivity {
         return requestBody;
     }
 
-    private JSONObject createPasswordRequestBody(String currentPassword, String newPassword) {
+    private JSONObject createPasswordRequestBody(String oldPassword, String newPassword) {
         JSONObject requestBody = new JSONObject();
         try {
-            requestBody.put("currentPassword", currentPassword);
+            requestBody.put("oldPassword", oldPassword);
             requestBody.put("newPassword", newPassword);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        return requestBody;
+        Log.d("PasswordChange", "Request Body: " + requestBody.toString());
+        return requestBody;  // 返回 JSONObject
     }
+
 
     private interface SuccessHandler {
         void handle(JSONObject response) throws JSONException;
     }
 
     private interface ErrorHandler {
-        void handle(VolleyError error);
+        void handle(Exception error);
     }
 }

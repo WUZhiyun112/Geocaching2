@@ -204,7 +204,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
         return gson.fromJson(responseData, listType);
     }
     private void sendUpdateStatusRequest(Geocache geocache) {
-        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/set";
+        String apiUrl = "http://192.168.189.72:8080/api/foundstatus/set";
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
         String foundAt = sdf.format(new Date());
@@ -257,7 +257,7 @@ public class SearchedNotFoundGeocachesFragment extends Fragment {
 
     private void loadData() {
         // 重新加载数据的方法
-        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/list?userId=" + userId;
+        String apiUrl = "http://192.168.189.72:8080/api/foundstatus/list?userId=" + userId;
 
         Request request = new Request.Builder()
                 .url(apiUrl)

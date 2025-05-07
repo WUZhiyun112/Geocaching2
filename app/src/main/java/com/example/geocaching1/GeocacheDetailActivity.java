@@ -354,8 +354,8 @@ public class GeocacheDetailActivity extends AppCompatActivity {
 
 
             String apiUrl = isMarked ?
-                    "http://192.168.98.72:8080/api/mark/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
-                    "http://192.168.98.72:8080/api/mark/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
+                    "http://192.168.189.72:8080/api/mark/remove?userId=" + userId + "&geocacheCode=" + geocacheCode :
+                    "http://192.168.189.72:8080/api/mark/add?userId=" + userId + "&geocacheCode=" + geocacheCode +
                             "&geocacheName=" + geocacheName[0] + "&geocacheType=" + geocacheType[0] + "&location=" + location[0];
 
             // 创建 OkHttpClient 实例并发送请求
@@ -444,7 +444,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         String token = prefs.getString("JWT_TOKEN", "");  // 获取JWT令牌
 
         String geocacheCode = geocache.getCode();  // 获取 geocache 的 code
-        String apiUrl = "http://192.168.98.72:8080/api/mark/list?userId=" + userId;
+        String apiUrl = "http://192.168.189.72:8080/api/mark/list?userId=" + userId;
 
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();
         Request request = new Request.Builder()
@@ -585,7 +585,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
             }
 
             // 构造请求 URL
-            String apiUrl = "http://192.168.98.72:8080/api/foundstatus/set";
+            String apiUrl = "http://192.168.189.72:8080/api/foundstatus/set";
 
             // 创建 POST 请求的请求体
             String requestBody = "userId=" + userId +
@@ -669,7 +669,7 @@ public class GeocacheDetailActivity extends AppCompatActivity {
         String geocacheCode = geocache.getCode();
 
         // 构造请求 URL
-        String apiUrl = "http://192.168.98.72:8080/api/foundstatus/list?userId=" + userId;
+        String apiUrl = "http://192.168.189.72:8080/api/foundstatus/list?userId=" + userId;
 
         // 创建 OkHttp 请求
         OkHttpClient client = ApiClient.getUnsafeOkHttpClient();

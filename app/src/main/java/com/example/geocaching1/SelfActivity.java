@@ -97,6 +97,10 @@ public class SelfActivity extends AppCompatActivity {
             // 结束当前Activity
             finish();
 
+            // 强制退出应用
+            System.exit(0);  // 终止应用程序，退出应用的同时清空堆栈
+
+            // 提示用户退出成功
             Toast.makeText(SelfActivity.this, "Logged out successfully", Toast.LENGTH_SHORT).show();
         });
 

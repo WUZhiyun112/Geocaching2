@@ -30,8 +30,8 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     private TextInputEditText newPasswordEditText, confirmNewPasswordEditText; // Add these
 
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
-    private static final String VERIFY_URL = "http://192.168.98.72:8080/api/users/verify";
-    private static final String UPDATE_PASSWORD_URL = "http://192.168.98.72:8080/api/users/forgot-password";
+    private static final String VERIFY_URL = "http://192.168.189.72:8080/api/users/verify";
+    private static final String UPDATE_PASSWORD_URL = "http://192.168.189.72:8080/api/users/forgot-password";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -39,7 +39,7 @@ import android.content.Intent;
 public class RegisterActivity extends AppCompatActivity {
 
 //    private static final String REGISTER_URL = "http://10.0.2.2:8080/api/users/register";
-    private static final String REGISTER_URL = "http://192.168.98.72:8080/api/users/register";
+    private static final String REGISTER_URL = "http://192.168.189.72:8080/api/users/register";
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private boolean isRegistering = false;
