@@ -66,6 +66,7 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         app:shapeAppearanceOverlay="@style/RoundedTextInputLayout"
         app:boxStrokeColor="#68945c"
+        app:endIconMode="password_toggle"
         app:layout_constraintTop_toBottomOf="@id/usernameLayout"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
